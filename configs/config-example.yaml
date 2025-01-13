@@ -1,0 +1,5 @@
+ipaddr: "127.0.0.1"
+port: 8848
+namespaceid: "im"
+group: "dev"
+dataid: app
