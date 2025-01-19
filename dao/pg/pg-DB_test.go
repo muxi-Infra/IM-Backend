@@ -1,7 +1,8 @@
-package dao
+package pg
 
 import (
-	"IM-Backend/model"
+	"IM-Backend/dao"
+	"IM-Backend/model/table"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"testing"
@@ -15,7 +16,7 @@ func TestPgTable_CheckTableExist(t *testing.T) {
 	if err != nil {
 		panic("连接到数据库失败")
 	}
-	var tt Table = &model.PostInfo{}
+	var tt dao.Table = &table.PostInfo{}
 	var pg PgTable
 	exist := pg.CheckTableExist(db, tt, "testsvc")
 	t.Log(exist)
