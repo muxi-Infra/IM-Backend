@@ -15,12 +15,13 @@ type PostCommentInfo struct {
 	ID     uint64 //评论唯一ID
 	UserID string //用户ID
 	//SvcID uint64//所属服务ID
-	FatherID  uint64    //该评论的父亲评论，如果没有父亲，则为0
-	PostID    uint64    //所属帖子的ID
-	Content   string    // 评论内容
-	Extra     JSON      `gorm:"type:jsonb;column:extra"` // 其他补充内容，json格式
-	CreatedAt time.Time //创建时间
-	UpdatedAt time.Time //修改时间
+	FatherID     uint64    //该评论的父亲评论，如果没有父亲，则为0
+	TargetUserID string    //回复评论的用户ID，如果是根评论则为none
+	PostID       uint64    //所属帖子的ID
+	Content      string    // 评论内容
+	Extra        JSON      `gorm:"type:jsonb;column:extra"` // 其他补充内容，json格式
+	CreatedAt    time.Time //创建时间
+	UpdatedAt    time.Time //修改时间
 }
 
 func (p *PostCommentInfo) PgCreate(db *gorm.DB, svc string) error {
@@ -30,6 +31,7 @@ func (p *PostCommentInfo) PgCreate(db *gorm.DB, svc string) error {
     id BIGINT,                                         -- 评论唯一ID
     user_id VARCHAR(255),                               -- 用户ID
     father_id BIGINT DEFAULT 0,                        -- 父评论ID，默认为0表示没有父评论
+	targert_user_id VARCHAR(255), --回复评论的用户ID，如果是根评论则为none
     post_id BIGINT,                                    -- 所属帖子的ID
     content TEXT,                                      -- 评论内容
     extra JSONB,                                       -- 其他补充内容，存储为JSON格式

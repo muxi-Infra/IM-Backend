@@ -43,6 +43,7 @@ func (p *PostLikeInfo) TableName(svc string) string {
 type CommentLikeInfo struct {
 	CommentID uint64    //评论ID
 	UserID    string    //用户ID
+	PostID    uint64    //帖子ID
 	CreatedAt time.Time //创建时间
 }
 
@@ -52,13 +53,15 @@ func (c *CommentLikeInfo) PgCreate(db *gorm.DB, svc string) error {
 	CREATE TABLE %s (
     comment_id BIGINT,                                  -- 评论ID
     user_id VARCHAR(255),                                -- 用户ID
+	post_id BIGINT,--帖子ID
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,  -- 创建时间，默认为当前时间
     PRIMARY KEY (comment_id, user_id)                  -- 联合主键：确保一个用户只能对每条评论点赞一次
 	);
 	-- 创建索引
 	CREATE INDEX idx_cli_comment_id ON %s (comment_id);
 	CREATE INDEX idx_cli_user_id ON %s (user_id);
-	`, tableName, tableName, tableName)
+    CREATE INDEX idx_cli_post_id ON %s (post_id);
+	`, tableName, tableName, tableName, tableName)
 	return db.Exec(sql).Error
 }
 

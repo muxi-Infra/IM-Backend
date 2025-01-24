@@ -1,6 +1,7 @@
 package model
 
 import (
+	"IM-Backend/model/table"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -11,12 +12,39 @@ type PostComment struct {
 	UserID       string
 	Content      string
 	FatherID     uint64
-	FatherUserID string
+	TargetUserID string
 	PostID       uint64
-	Time         time.Time
+	CreatedAt    time.Time //创建时间
+	UpdatedAt    time.Time
 	Svc          string
-	Like         int64
 	Extra        map[string]interface{}
+}
+
+func NewPostComment(t table.PostCommentInfo, svc string) PostComment {
+	return PostComment{
+		ID:           t.ID,
+		UserID:       t.UserID,
+		Content:      t.Content,
+		FatherID:     t.FatherID,
+		TargetUserID: t.TargetUserID,
+		PostID:       t.PostID,
+		CreatedAt:    t.CreatedAt,
+		UpdatedAt:    t.UpdatedAt,
+		Extra:        t.Extra,
+		Svc:          svc,
+	}
+}
+func (c *PostComment) ToTable() table.PostCommentInfo {
+	return table.PostCommentInfo{
+		ID:        c.ID,
+		UserID:    c.UserID,
+		Content:   c.Content,
+		FatherID:  c.FatherID,
+		PostID:    c.PostID,
+		CreatedAt: c.CreatedAt,
+		UpdatedAt: c.UpdatedAt,
+		Extra:     c.Extra,
+	}
 }
 
 func (c *PostComment) ReadFromStrVal(jsonStr string) error {
@@ -24,7 +52,7 @@ func (c *PostComment) ReadFromStrVal(jsonStr string) error {
 }
 
 func (c *PostComment) GetStrKey() string {
-	return fmt.Sprintf("svc:%s:user:%s:post:%d:comment:%d", c.Svc, c.UserID, c.PostID, c.ID)
+	return fmt.Sprintf("svc:%s:comment:%d", c.Svc, c.ID)
 }
 
 func (c *PostComment) GetStrVal() string {

@@ -1,39 +1,62 @@
 package model
 
 import (
+	"IM-Backend/model/table"
 	"encoding/json"
 	"fmt"
 	"time"
 )
 
-type Post struct {
+type PostInfo struct {
 	ID        uint64
 	Content   string
 	Author    string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Svc       string
-	Like      int64
 	Extra     map[string]interface{}
 }
 
-func (p *Post) ReadFromStrVal(jsonStr string) error {
+func NewPostInfo(pi table.PostInfo, svc string) PostInfo {
+	return PostInfo{
+		ID:        pi.ID,
+		Content:   pi.Content,
+		Author:    pi.Author,
+		Extra:     pi.Extra,
+		CreatedAt: pi.CreatedAt,
+		UpdatedAt: pi.UpdatedAt,
+		Svc:       svc,
+	}
+}
+
+func (p *PostInfo) ToTable() table.PostInfo {
+	return table.PostInfo{
+		ID:        p.ID,
+		Content:   p.Content,
+		Author:    p.Author,
+		Extra:     p.Extra,
+		CreatedAt: p.CreatedAt,
+		UpdatedAt: p.UpdatedAt,
+	}
+}
+
+func (p *PostInfo) ReadFromStrVal(jsonStr string) error {
 	return json.Unmarshal([]byte(jsonStr), p)
 }
 
-func (p *Post) GetStrKey() string {
-	return fmt.Sprintf("svc:%s:user:%s:post:%d", p.Svc, p.Author, p.Like)
+func (p *PostInfo) GetStrKey() string {
+	return fmt.Sprintf("svc:%s:post:%d", p.Svc, p.ID)
 }
 
-func (p *Post) GetStrVal() string {
+func (p *PostInfo) GetStrVal() string {
 	val, _ := json.Marshal(p)
 	return string(val)
 }
 
-func (p *Post) GetSetKey() string {
+func (p *PostInfo) GetSetKey() string {
 	return fmt.Sprintf("svc:%s:user:%s:posts", p.Svc, p.Author)
 }
 
-func (p *Post) GetSetVal() string {
+func (p *PostInfo) GetSetVal() string {
 	return fmt.Sprintf("%d", p.ID)
 }
