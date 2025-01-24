@@ -83,7 +83,7 @@ func (r *ReadRepo) GetPostLike(ctx context.Context, svc string, id uint64) (int6
 	return cnt, nil
 }
 
-func (r *ReadRepo) GetCommentIds(ctx context.Context, svc string, id uint64) ([]uint64, error) {
+func (r *ReadRepo) GetPostCommentIds(ctx context.Context, svc string, id uint64) ([]uint64, error) {
 	tmp := &table.PostCommentInfo{}
 	if !r.tt.CheckTableExist(r.db, tmp, svc) {
 		return nil, errcode.ERRNoTable
@@ -97,7 +97,7 @@ func (r *ReadRepo) GetCommentIds(ctx context.Context, svc string, id uint64) ([]
 	return commentIds, nil
 }
 
-func (r *ReadRepo) GetCommentInfos(ctx context.Context, svc string, ids ...uint64) ([]table.PostCommentInfo, error) {
+func (r *ReadRepo) GetCommentInfosByID(ctx context.Context, svc string, ids ...uint64) ([]table.PostCommentInfo, error) {
 	if len(ids) == 0 {
 		return nil, errcode.ERRFindQueryIsEmpty
 	}

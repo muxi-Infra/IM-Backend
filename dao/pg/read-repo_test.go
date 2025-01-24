@@ -64,7 +64,7 @@ func TestReadRepo_GetCommentIds(t *testing.T) {
 	db := initdb()
 	tt := &PgTable{}
 	rr := &ReadRepo{db: db, tt: tt}
-	res, err := rr.GetCommentIds(context.Background(), "testsvc", 1)
+	res, err := rr.GetPostCommentIds(context.Background(), "testsvc", 1)
 	if err != nil {
 		t.Error(err)
 	}
@@ -75,7 +75,7 @@ func TestReadRepo_GetCommentInfos(t *testing.T) {
 	db := initdb()
 	tt := &PgTable{}
 	rr := &ReadRepo{db: db, tt: tt}
-	res, err := rr.GetCommentInfos(context.Background(), "testsvc", 1)
+	res, err := rr.GetCommentInfosByID(context.Background(), "testsvc", 1)
 	if err != nil {
 		t.Error(err)
 	}
