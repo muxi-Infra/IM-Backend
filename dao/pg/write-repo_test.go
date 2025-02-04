@@ -69,6 +69,7 @@ func TestWriteRepo_Create(t *testing.T) {
 			ID:       1,
 			UserID:   "hello",
 			FatherID: 0,
+			TargetUserID: "test_user",
 			PostID:   1,
 			Content:  "hello world",
 			Extra: map[string]interface{}{

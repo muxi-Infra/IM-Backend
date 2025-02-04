@@ -15,7 +15,7 @@ const (
 type PostLikeInfo struct {
 	PostID    uint64    `gorm:"column:post_id"` //帖子ID
 	UserID    string    `gorm:"column:user_id"` //用户ID
-	CreatedAt time.Time //创建时间
+	CreatedAt time.Time `gorm:"column:created_at"`//创建时间
 }
 
 func (p *PostLikeInfo) PgCreate(db *gorm.DB, svc string) error {
@@ -41,10 +41,10 @@ func (p *PostLikeInfo) TableName(svc string) string {
 
 // 评论的点赞表
 type CommentLikeInfo struct {
-	CommentID uint64    //评论ID
-	UserID    string    //用户ID
-	PostID    uint64    //帖子ID
-	CreatedAt time.Time //创建时间
+	CommentID uint64    `gorm:"column:comment_id"`//评论ID
+	UserID    string    `gorm:"column:user_id"`//用户ID
+	PostID    uint64    `gorm:"column:post_id"`//帖子ID
+	CreatedAt time.Time `gorm:"column:created_at"`//创建时间
 }
 
 func (c *CommentLikeInfo) PgCreate(db *gorm.DB, svc string) error {

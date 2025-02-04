@@ -12,13 +12,13 @@ const (
 
 // 帖子基本信息表
 type PostInfo struct {
-	ID uint64 //帖子唯一ID
+	ID uint64 `gorm:"column:id"`//帖子唯一ID
 	//SvcID  string//所属服务ID
-	Content   string    //内容
-	Author    string    //作者ID
+	Content   string `gorm:"column:content"`    //内容
+	Author    string    `gorm:"column:author"`//作者ID
 	Extra     JSON      `gorm:"type:jsonb;column:extra"` // 其他补充内容，json格式
-	CreatedAt time.Time //创建时间
-	UpdatedAt time.Time //修改时间
+	CreatedAt time.Time `gorm:"column:"created_at"`//创建时间
+	UpdatedAt time.Time `gorm:"column:"updated_at"`//修改时间
 }
 
 func (pi *PostInfo) PgCreate(db *gorm.DB, svc string) error {
