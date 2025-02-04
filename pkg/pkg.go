@@ -45,7 +45,7 @@ func Unique[T comparable](slice []T) []T {
 	// 用于记录元素是否已经存在
 	seen := make(map[T]struct{})
 	// 存储去重后的结果
-	var result []T
+	var result = make([]T, 0)
 
 	// 遍历输入切片
 	for _, item := range slice {
