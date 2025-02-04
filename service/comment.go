@@ -23,8 +23,58 @@ type CommentSvc struct {
 	pendingComments chan<- identity.CommentIdentity
 }
 
-func (c *CommentSvc) Callback(conf *configs.AppConf) {
+func NewCommentService(dw GormWriter, dr GormCommentReader, cw WriteCache, cr ReadCache, pendingComments chan<- identity.CommentIdentity, cf configs.AppConf) *CommentSvc {
+	return &CommentSvc{
+		dw:              dw,
+		dr:              dr,
+		cw:              cw,
+		cr:              cr,
+		commentExpire:   time.Duration(cf.Cache.CommentExpire) * time.Second,
+		pendingComments: pendingComments,
+	}
+}
+
+func (c *CommentSvc) Callback(conf configs.AppConf) {
 	c.commentExpire = time.Duration(conf.Cache.CommentExpire) * time.Second
+}
+
+func (c *CommentSvc) GetCommentUserIDByID(ctx context.Context, svc string, commentID uint64) (string, error) {
+	var comment = model.PostComment{
+		ID:  commentID,
+		Svc: svc,
+	}
+	err := c.cr.GetKV(ctx, &comment)
+	if err == nil {
+		return comment.UserID, nil
+	}
+	if !errors.Is(err, errcode.ERRCacheMiss) {
+		return "", err
+	}
+	return c.dr.GetUserIDByCommentID(ctx, svc, commentID)
+
+}
+
+func (c *CommentSvc) Like(ctx context.Context, svc string, postID uint64, commentID uint64, userID string) error {
+	//点赞需要删除之前的缓存的点赞信息
+	if err := c.delLike(ctx, svc, commentID); err != nil {
+		return err
+	}
+	err := c.dw.Create(ctx, svc, &table.CommentLikeInfo{
+		CommentID: commentID,
+		UserID:    userID,
+		PostID:    postID,
+		CreatedAt: time.Now(),
+	})
+	if err != nil {
+		return err
+	}
+	//延迟删除
+	go func() {
+		time.AfterFunc(time.Second, func() {
+			_ = c.delLike(context.Background(), svc, commentID)
+		})
+	}()
+	return nil
 }
 
 // Publish 发表评论
@@ -273,27 +323,35 @@ func (c *CommentSvc) getLike(ctx context.Context, svc string, commentID ...uint6
 	if len(commentID) == 0 {
 		return nil, nil, nil
 	}
-	////如果没有这个comment则不查询其
-	//var unexist = make(map[uint64]int64)
-	//var rightCommentID []uint64
-	//exist := c.dr.CheckCommentExist(ctx, svc, commentID...)
-	//for i,ok := range exist {
-	//	if ok {
-	//		rightCommentID = append(rightCommentID, commentID[i])
-	//	}else {
-	//		unexist[commentID[i]] = 0
-	//	}
-	//}
+	//如果没有某个comment则不查询其
+	var unexist = make(map[uint64]int64) //unexist是用来存储不存在的
+	var rightCommentID []uint64          //rightCommentID是用来存储存在的commentID
+	exist := c.dr.CheckCommentExist(ctx, svc, commentID...)
+	for i, ok := range exist {
+		if ok {
+			//这里是存在的comment
+			rightCommentID = append(rightCommentID, commentID[i])
+		} else {
+			//不存在的直接置为0，无需查询
+			unexist[commentID[i]] = 0
+		}
+	}
 
-	found, leftID := c.getLikeFromCache(ctx, svc, commentID...)
-	if len(leftID) == 0 { //全部在缓存中找到
-		return found, nil, nil
+	//如果全是不存在的，直接返回unexist即可
+	if len(rightCommentID) == 0 {
+		return unexist, nil, nil
+	}
+
+	found, leftID := c.getLikeFromCache(ctx, svc, rightCommentID...)
+	//全部在缓存中找到
+	if len(leftID) == 0 {
+		return pkg.MergeMaps(found, unexist), nil, nil
 	}
 	res, err := c.dr.GetCommentLike(ctx, svc, leftID...)
 	if err != nil {
 		return nil, nil, err
 	}
-	return found, res, errcode.ERRCacheMiss
+	return pkg.MergeMaps(found, unexist), res, errcode.ERRCacheMiss
 }
 
 func (c *CommentSvc) setLikeCache(ctx context.Context, svc string, mp map[uint64]int64) error {
@@ -309,4 +367,20 @@ func (c *CommentSvc) setLikeCache(ctx context.Context, svc string, mp map[uint64
 		})
 	}
 	return c.cw.SetKV(ctx, 5*time.Minute, kvs...)
+}
+
+func (c *CommentSvc) delLike(ctx context.Context, svc string, commentID uint64) error {
+	var tmp = &model.PostCommentLike{
+		Svc:       svc,
+		CommentID: commentID,
+	}
+	err := c.cr.GetKV(ctx, tmp)
+	//当查询点赞数小于10000或者查询失败则删除缓存的点赞数
+	//其他情况则不删，等待过期时间结束
+	if err != nil || tmp.Like < 10000 {
+		if err := c.cw.DelKV(ctx, tmp); err != nil {
+			return err
+		}
+	}
+	return nil
 }

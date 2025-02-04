@@ -20,7 +20,19 @@ type PostSvc struct {
 	pendingPost chan<- identity.PostIdentity
 }
 
-func (p *PostSvc) Callback(conf *configs.AppConf) {
+func NewPostSvc(dw GormWriter, dr GormPostReader, cw WriteCache, cr ReadCache,
+	pendingPost chan<- identity.PostIdentity, cf configs.AppConf) *PostSvc {
+	return &PostSvc{
+		dw:          dw,
+		dr:          dr,
+		cw:          cw,
+		cr:          cr,
+		pendingPost: pendingPost,
+		postExpire:  time.Duration(cf.Cache.PostExpire) * time.Second,
+	}
+}
+
+func (p *PostSvc) Callback(conf configs.AppConf) {
 	p.postExpire = time.Duration(conf.Cache.PostExpire) * time.Second
 }
 
@@ -160,7 +172,7 @@ func (p *PostSvc) Like(ctx context.Context, svc string, postID uint64, userID st
 	}); err != nil {
 		return err
 	}
-
+	//延迟删除缓存
 	go func() {
 		time.AfterFunc(time.Second, func() {
 			_ = p.delLike(context.Background(), svc, postID)
@@ -188,7 +200,7 @@ func (p *PostSvc) getPostInfo(ctx context.Context, svc string, postID uint64) (m
 
 func (p *PostSvc) getLike(ctx context.Context, svc string, postID uint64) (int64, error) {
 	//先检查是否存在该post
-	if !p.dr.CheckExist(ctx, svc, postID) {
+	if !p.dr.CheckPostExist(ctx, svc, postID) {
 		return 0, nil
 	}
 

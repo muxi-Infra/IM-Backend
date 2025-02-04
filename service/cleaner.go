@@ -1,6 +1,7 @@
 package service
 
 import (
+	"IM-Backend/configs"
 	"IM-Backend/service/identity"
 	"context"
 	"sync"
@@ -19,6 +20,18 @@ type CleanSvc struct {
 
 	cleaner TrashCleaner
 	lock    sync.Mutex
+}
+
+func NewCleanSvc(pdc <-chan identity.CommentIdentity, pdpl <-chan identity.PostLikeIdentity, pdcl <-chan identity.CommentLikeIdentity, cleaner TrashCleaner, cf configs.AppConf) *CleanSvc {
+	return &CleanSvc{
+		pdc:     pdc,
+		pdpl:    pdpl,
+		pdcl:    pdcl,
+		cleaner: cleaner,
+		batch1:  cf.Clean.CommentBatch,
+		batch2:  cf.Clean.PostLikeBatch,
+		batch3:  cf.Clean.CommentLikeBatch,
+	}
 }
 
 func (c *CleanSvc) Run(ctx context.Context) {

@@ -17,4 +17,6 @@ var (
 	ERRNoRightRecord    = NewErr(10014, "no right  record found")
 	ERRCacheMiss        = NewErr(10015, "cache miss")
 	ERRUpdateQueryEmpty = NewErr(10016, "update query is empty")
+	ERRGenerateID       = NewErr(10017, "generate id failed")
+	ERRDelKV            = NewErr(10018, "del k-v in cache failed")
 )

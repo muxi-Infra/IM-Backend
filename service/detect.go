@@ -7,31 +7,48 @@ import (
 )
 
 type DetectSvc struct {
-	pfp    chan identity.PostIdentity          //待寻找的post(pending find post)
-	pfc    chan identity.CommentIdentity       //待寻找的comment(pending find comment)
-	pdc    chan<- identity.CommentIdentity     //待删除的comment(pending delete comment)
-	pdpl   chan<- identity.PostLikeIdentity    //待删除的post like(pending delete post like)
-	pdcl   chan<- identity.CommentLikeIdentity //待删除的comment like(pending delete comment like)
-	finder TrashFinder
+	pfp        chan identity.PostIdentity          //待寻找的post(pending find post)
+	pfc        chan identity.CommentIdentity       //待寻找的comment(pending find comment)
+	pdc        chan<- identity.CommentIdentity     //待删除的comment(pending delete comment)
+	pdpl       chan<- identity.PostLikeIdentity    //待删除的post like(pending delete post like)
+	pdcl       chan<- identity.CommentLikeIdentity //待删除的comment like(pending delete comment like)
+	finder     TrashFinder
+	svcHandler SvcHandler
+}
+
+func NewDetectSvc(pfp chan identity.PostIdentity,
+	pfc chan identity.CommentIdentity,
+	pdc chan<- identity.CommentIdentity,
+	pdpl chan<- identity.PostLikeIdentity,
+	pdcl chan<- identity.CommentLikeIdentity,
+	finder TrashFinder,
+	svcHandler SvcHandler) *DetectSvc {
+	return &DetectSvc{
+		pfp:        pfp,
+		pfc:        pfc,
+		pdc:        pdc,
+		pdpl:       pdpl,
+		pdcl:       pdcl,
+		finder:     finder,
+		svcHandler: svcHandler,
+	}
 }
 
 func (ds *DetectSvc) Run(ctx context.Context) {
 	//另起协程来找寻多余的postID和commentID
 	ds.find(ctx)
-	go func(ctxx context.Context) {
-		for {
-			select {
-			case post := <-ds.pfp:
-				go ds.delComment(ctx, post)
-				go ds.delCommentLikeByPost(ctx, post)
-				ds.delPostLike(ctx, post)
-			case comment := <-ds.pfc:
-				ds.delCommentLikeByComment(ctx, comment)
-			case <-ctxx.Done():
-				return
-			}
+	for {
+		select {
+		case post := <-ds.pfp:
+			go ds.delComment(ctx, post)
+			go ds.delCommentLikeByPost(ctx, post)
+			ds.delPostLike(ctx, post)
+		case comment := <-ds.pfc:
+			ds.delCommentLikeByComment(ctx, comment)
+		case <-ctx.Done():
+			return
 		}
-	}(ctx)
+	}
 }
 
 func (ds *DetectSvc) find(ctx context.Context) {
@@ -39,7 +56,7 @@ func (ds *DetectSvc) find(ctx context.Context) {
 		for {
 			select {
 			case <-time.After(10 * time.Minute):
-				svcs := ds.finder.GetAllSvc(ctx)
+				svcs := ds.svcHandler.GetAllServices()
 				for _, svc := range svcs {
 					pss := ds.findPost(ctx, svc)
 					for _, post := range pss {
@@ -55,7 +72,7 @@ func (ds *DetectSvc) find(ctx context.Context) {
 		for {
 			select {
 			case <-time.Tick(15 * time.Minute):
-				svcs := ds.finder.GetAllSvc(ctx)
+				svcs := ds.svcHandler.GetAllServices()
 				for _, svc := range svcs {
 					ccs := ds.findComment(ctx, svc)
 					for _, comment := range ccs {
@@ -130,7 +147,7 @@ func (ds *DetectSvc) delCommentLikeByComment(ctx context.Context, comment identi
 	}
 }
 func (ds *DetectSvc) delPostLike(ctx context.Context, post identity.PostIdentity) {
-	res := ds.finder.FindTrashPostLike(ctx, post.Svc, post.PostID)
+	res := ds.finder.FindTrashPostLikeByPostID(ctx, post.Svc, post.PostID)
 	for _, v := range res {
 		ds.pdpl <- identity.PostLikeIdentity{
 			Svc:    post.Svc,
