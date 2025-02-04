@@ -31,7 +31,7 @@ func TestWriteRepo_Create(t *testing.T) {
 	}
 
 	testTime := time.Now()
-	var pg PgTable
+	pg := new(PgTable)
 	wr := &WriteRepo{db: db, tt: pg}
 	var tt dao.Table
 	t.Run("create post_info", func(t *testing.T) {
