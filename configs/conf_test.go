@@ -6,8 +6,8 @@ type MockNotifyer struct {
 	addr string
 }
 
-func (m *MockNotifyer) Callback(a *AppConf) {
-	m.addr = a.DB.Addr
+func (m *MockNotifyer) Callback(a AppConf) {
+	m.addr = a.Cache.Addr
 }
 
 func TestAppConf_load(t *testing.T) {

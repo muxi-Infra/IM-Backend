@@ -40,6 +40,20 @@ func TestWriter_SetKV(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	err = w.SetKV(context.Background(), 20*time.Minute, &model.PostInfo{
+		ID:        2,
+		Content:   "hello world",
+		Author:    "hello",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Svc:       "testsvc",
+		Extra: map[string]interface{}{
+			"image": "hello",
+		},
+	})
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestWriter_AddKVToSet(t *testing.T) {
@@ -50,6 +64,15 @@ func TestWriter_AddKVToSet(t *testing.T) {
 		ID:     1,
 		Author: "hello",
 	})
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestWriter_DelKV(t *testing.T) {
+	cli := initRedis()
+	w := &Writer{cli}
+	err := w.DelKV(context.Background(), &model.PostInfo{ID: 1, Svc: "testsvc"})
 	if err != nil {
 		t.Error(err)
 	}

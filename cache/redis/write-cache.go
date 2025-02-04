@@ -12,6 +12,19 @@ type Writer struct {
 	cli *redis.Client
 }
 
+func NewWriter(client *redis.Client) *Writer {
+	return &Writer{cli: client}
+}
+
+func (w *Writer) DelKV(ctx context.Context, kv cache.KV) error {
+	key := kv.GetStrKey()
+	err := w.cli.Del(ctx, key).Err()
+	if err != nil {
+		return errcode.ERRDelKV.WrapError(err)
+	}
+	return nil
+}
+
 func (w *Writer) SetKV(ctx context.Context, expire time.Duration, kv ...cache.KV) error {
 	if len(kv) == 0 {
 		return nil // nothing to do if no key-value pairs provided.

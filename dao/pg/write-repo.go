@@ -18,7 +18,7 @@ type WriteRepo struct {
 	tt dao.TableTooler
 }
 
-func NewTableRepo(db *gorm.DB, tt dao.TableTooler) *WriteRepo {
+func NewWriteRepo(db *gorm.DB, tt dao.TableTooler) *WriteRepo {
 	return &WriteRepo{db: db, tt: tt}
 }
 func (t2 *WriteRepo) GetGormTx(ctx context.Context) (tx *gorm.DB) {
