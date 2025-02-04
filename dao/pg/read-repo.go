@@ -30,7 +30,7 @@ func (r *ReadRepo) CheckPostExist(ctx context.Context, svc string, id uint64) bo
 	}
 
 	var cnt int64
-	err := r.db.WithContext(ctx).Table(tmp.TableName(svc)).Where("id = ?", id).Count(&cnt)
+	err := r.db.WithContext(ctx).Table(tmp.TableName(svc)).Where("id = ?", id).Count(&cnt).Error
 	if err != nil {
 		return false
 	}
@@ -196,7 +196,7 @@ func (r *ReadRepo) GetChildCommentIDAfterCursor(ctx context.Context, svc string,
 	}
 
 	var commentIDs []uint64
-	err := r.db.WithContext(ctx).Table(tmp.TableName(svc)).Where("father_id = ? AND created_at > ?", fatherID, cursor).
+	err := r.db.WithContext(ctx).Table(tmp.TableName(svc)).Select("id").Where("father_id = ? AND created_at > ?", fatherID, cursor).
 		Order("created_at").Limit(int(limit)).Pluck("id", &commentIDs).Error
 	if err != nil {
 		return nil, errcode.ERRFindData.WrapError(err)
@@ -260,7 +260,7 @@ func (r *ReadRepo) CheckCommentExist(ctx context.Context, svc string, commentID 
 		return nil
 	}
 	var existingIDs []uint64
-	err := r.db.WithContext(ctx).Table(tmp.TableName(svc)).Where("id IN ?", commentID).Pluck("id", &existingIDs)
+	err := r.db.WithContext(ctx).Table(tmp.TableName(svc)).Select("id").Where("id IN ?", commentID).Pluck("id", &existingIDs).Error
 	if err != nil {
 		return nil
 	}

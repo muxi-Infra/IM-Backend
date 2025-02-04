@@ -4,10 +4,11 @@ import (
 	"IM-Backend/dao"
 	"IM-Backend/model/table"
 	"context"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 	"testing"
 	"time"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func TestWriteRepo_GetGormTx(t *testing.T) {
@@ -66,12 +67,12 @@ func TestWriteRepo_Create(t *testing.T) {
 	})
 	t.Run("create comment", func(t *testing.T) {
 		tt = &table.PostCommentInfo{
-			ID:       1,
-			UserID:   "hello",
-			FatherID: 0,
-			TargetUserID: "test_user",
-			PostID:   1,
-			Content:  "hello world",
+			ID:           1,
+			UserID:       "hello",
+			FatherID:     0,
+			TargetUserID: "none",
+			PostID:       1,
+			Content:      "hello world",
 			Extra: map[string]interface{}{
 				"image": "hello",
 			},
