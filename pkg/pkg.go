@@ -39,3 +39,23 @@ func MergeMaps[K comparable, V any](map1, map2 map[K]V) map[K]V {
 
 	return result
 }
+
+// Unique 通用去重函数，适用于任意可比较类型
+func Unique[T comparable](slice []T) []T {
+	// 用于记录元素是否已经存在
+	seen := make(map[T]struct{})
+	// 存储去重后的结果
+	var result []T
+
+	// 遍历输入切片
+	for _, item := range slice {
+		// 如果元素还没有出现过
+		if _, ok := seen[item]; !ok {
+			// 将元素添加到结果切片中
+			result = append(result, item)
+			// 标记该元素已经出现过
+			seen[item] = struct{}{}
+		}
+	}
+	return result
+}
