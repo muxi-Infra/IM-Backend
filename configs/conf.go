@@ -49,6 +49,9 @@ func (ac *AppConf) InitConfig(ncc *NacosClient) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (ac *AppConf) StartListen(ncc *NacosClient) {
 	f := func(data string) {
 		global.AppLock.Lock()
 		defer global.AppLock.Unlock()

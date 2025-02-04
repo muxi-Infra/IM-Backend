@@ -29,8 +29,8 @@ func main() {
 	ncClient := configs.NewNacosClient(nc)
 
 	var ac configs.AppConf
-	ac.AddNotifyer()        //添加配置通知
-	ac.InitConfig(ncClient) //初始化应用配置并开启监听
+
+	ac.InitConfig(ncClient) //初始化读取配置
 
 	db := pg.NewDB(ac)
 	client := redis.NewRedisClient(ac)
@@ -53,6 +53,7 @@ func main() {
 		pdpl = make(chan identity.PostLikeIdentity, 30)    //待删除的post like(pending delete post like)
 		pdcl = make(chan identity.CommentLikeIdentity, 30) //待删除的comment like(pending delete comment like)
 	)
+
 	authSvc := service.NewAuthSvc(svcManager)
 	postSvc := service.NewPostSvc(writeRepo, readRepo, cacheWriter, cacheReader, pfp, ac)
 	commentSvc := service.NewCommentService(writeRepo, readRepo, cacheWriter, cacheReader, pfc, ac)
@@ -63,6 +64,9 @@ func main() {
 	commentCtrl := controller.NewCommentController(commentSvc, ider)
 
 	app := route.NewApp(postCtrl, commentCtrl, authSvc, detectSvc, cleanSvc)
+
+	ac.AddNotifyer(postSvc, commentSvc, cleanSvc, svcManager) //添加配置通知
+	ac.StartListen(ncClient)                                  //开启监听
 
 	app.Run(cctx) //运行应用
 }

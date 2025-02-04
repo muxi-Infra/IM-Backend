@@ -22,8 +22,14 @@ type CleanSvc struct {
 	lock    sync.Mutex
 }
 
+func (c *CleanSvc) Callback(conf configs.AppConf) {
+	c.batch1 = conf.Clean.CommentBatch
+	c.batch2 = conf.Clean.PostLikeBatch
+	c.batch3 = conf.Clean.CommentLikeBatch
+}
+
 func NewCleanSvc(pdc <-chan identity.CommentIdentity, pdpl <-chan identity.PostLikeIdentity, pdcl <-chan identity.CommentLikeIdentity, cleaner TrashCleaner, cf configs.AppConf) *CleanSvc {
-	return &CleanSvc{
+	cs := &CleanSvc{
 		pdc:     pdc,
 		pdpl:    pdpl,
 		pdcl:    pdcl,
@@ -32,6 +38,16 @@ func NewCleanSvc(pdc <-chan identity.CommentIdentity, pdpl <-chan identity.PostL
 		batch2:  cf.Clean.PostLikeBatch,
 		batch3:  cf.Clean.CommentLikeBatch,
 	}
+	if cs.batch1 <= 0 {
+		cs.batch1 = 10
+	}
+	if cs.batch2 <= 0 {
+		cs.batch2 = 10
+	}
+	if cs.batch3 <= 0 {
+		cs.batch3 = 10
+	}
+	return cs
 }
 
 func (c *CleanSvc) Run(ctx context.Context) {
