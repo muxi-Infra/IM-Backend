@@ -32,8 +32,8 @@ type UpdateCommentQuery struct {
 	UserID    string `form:"user_id"`
 }
 type UpdateCommentFormData struct {
-	Content string `form:"content"`
-	Extra   string `form:"extra"`
+	Content *string `form:"content"`
+	Extra   *string `form:"extra"`
 }
 
 type DeleteCommentQuery struct {

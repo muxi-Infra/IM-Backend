@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+//go:generate mockgen -destination=./mocks/mock_svc.go -package=mocks -source=service.go
+
 type GormWriter interface {
 	GetGormTx(ctx context.Context) (tx *gorm.DB)
 	Create(ctx context.Context, svc string, t dao.Table) error

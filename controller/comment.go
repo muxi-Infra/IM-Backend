@@ -3,6 +3,7 @@ package controller
 import (
 	"IM-Backend/controller/req"
 	"IM-Backend/controller/resp"
+	"IM-Backend/errcode"
 	"IM-Backend/model"
 	"IM-Backend/model/table"
 	"context"
@@ -140,16 +141,26 @@ func (cc *CommentController) Update(c *gin.Context) {
 		resp.SendResp(c, resp.ParamBindErrResp)
 		return
 	}
-	var extra map[string]interface{}
-	if err := json.Unmarshal([]byte(formdata.Extra), &extra); err != nil {
-		resp.SendResp(c, resp.ParamBindErrResp)
+	//如果两个都为空,直接返回
+	if formdata.Content == nil && formdata.Extra == nil {
+		resp.SendResp(c, resp.NewErrResp(errcode.ERRUpdateQueryEmpty))
 		return
 	}
 
-	err := cc.commentSvc.Update(c, query.Svc, query.UserID, query.CommentID, map[string]interface{}{
-		"content": formdata.Content,
-		"extra":   extra,
-	})
+	var updates = make(map[string]interface{}, 2)
+	if formdata.Content != nil {
+		updates["content"] = *formdata.Content
+	}
+	if formdata.Extra != nil {
+		var extra map[string]interface{}
+		if err := json.Unmarshal([]byte(*formdata.Extra), &extra); err != nil {
+			resp.SendResp(c, resp.ParamBindErrResp)
+			return
+		}
+		updates["extra"] = extra
+	}
+
+	err := cc.commentSvc.Update(c, query.Svc, query.UserID, query.CommentID, updates)
 	if err != nil {
 		resp.SendResp(c, resp.NewErrResp(err))
 		return

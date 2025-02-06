@@ -3,6 +3,7 @@ package controller
 import (
 	"IM-Backend/controller/req"
 	"IM-Backend/controller/resp"
+	"IM-Backend/errcode"
 	"IM-Backend/model/table"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
@@ -46,6 +47,7 @@ func (p *PostController) Publish(c *gin.Context) {
 
 	var post = table.PostInfo{
 		Author:    formdata.Author,
+		Title:     formdata.Title,
 		Content:   formdata.Content,
 		Extra:     extra,
 		CreatedAt: createdTime,
@@ -142,16 +144,27 @@ func (p *PostController) Update(c *gin.Context) {
 		resp.SendResp(c, resp.ParamBindErrResp)
 		return
 	}
-	var extra map[string]interface{}
-	if err := json.Unmarshal([]byte(formdata.Extra), &extra); err != nil {
-		resp.SendResp(c, resp.ParamBindErrResp)
+	//如果均为空则直接返回
+	if formdata.Content == nil && formdata.Extra == nil {
+		resp.SendResp(c, resp.NewErrResp(errcode.ERRUpdateQueryEmpty))
 		return
 	}
 
-	err := p.postSvc.Update(c, query.Svc, query.UserID, query.PostID, map[string]interface{}{
-		"content": formdata,
-		"extra":   extra,
-	})
+	var updates = make(map[string]interface{}, 2)
+
+	if formdata.Content != nil {
+		updates["content"] = *formdata.Content
+	}
+	if formdata.Extra != nil {
+		var extra map[string]interface{}
+		if err := json.Unmarshal([]byte(*formdata.Extra), &extra); err != nil {
+			resp.SendResp(c, resp.ParamBindErrResp)
+			return
+		}
+		updates["extra"] = extra
+	}
+
+	err := p.postSvc.Update(c, query.Svc, query.UserID, query.PostID, updates)
 	if err != nil {
 		resp.SendResp(c, resp.NewErrResp(err))
 		return

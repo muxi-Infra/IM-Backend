@@ -22,6 +22,8 @@ func init() {
 }
 
 func main() {
+	flag.Parse()
+
 	cctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

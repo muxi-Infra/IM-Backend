@@ -7,6 +7,7 @@ import (
 
 type Post struct {
 	ID        uint64                 `json:"id"`
+	Title     string                 `json:"title"`
 	Content   string                 `json:"content"`
 	Author    string                 `json:"author"`
 	CreatedAt time.Time              `json:"created_at"`
@@ -18,6 +19,7 @@ type Post struct {
 func NewPostResp(post model.PostInfo) Post {
 	return Post{
 		ID:        post.ID,
+		Title:     post.Title,
 		Content:   post.Content,
 		Author:    post.Author,
 		CreatedAt: post.CreatedAt,

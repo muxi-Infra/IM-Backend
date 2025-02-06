@@ -2,6 +2,7 @@ package cache
 
 import (
 	"IM-Backend/configs"
+	"log"
 )
 
 type KV interface {
@@ -25,6 +26,7 @@ func NewSvcManager(conf configs.AppConf) *SvcManager {
 	for _, svc := range conf.Svc {
 		mp[svc.Name] = svc.Secret
 	}
+	log.Printf("init svc: %+v\n", mp)
 	return &SvcManager{mp: mp}
 }
 
@@ -34,6 +36,7 @@ func (m *SvcManager) Callback(conf configs.AppConf) {
 	for _, svc := range conf.Svc {
 		m.mp[svc.Name] = svc.Secret
 	}
+	log.Printf("init svc: %+v\n", m.mp)
 }
 
 func (m *SvcManager) GetAllServices() []string {

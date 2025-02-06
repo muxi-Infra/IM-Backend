@@ -6,6 +6,7 @@ type PublishPostQuery struct {
 }
 type PublishPostFormData struct {
 	Author  string `form:"author"`
+	Title   string `form:"title"`
 	Content string `form:"content"`
 	Extra   string `form:"extra"`
 }
@@ -43,6 +44,6 @@ type UpdatePostQuery struct {
 	UserID string `form:"user_id"`
 }
 type UpdatePostFormData struct {
-	Content string `form:"content"`
-	Extra   string `form:"extra"`
+	Content *string `form:"content"`
+	Extra   *string `form:"extra"`
 }

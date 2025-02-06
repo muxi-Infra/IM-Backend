@@ -10,6 +10,7 @@ import (
 type PostInfo struct {
 	ID        uint64
 	Content   string
+	Title     string
 	Author    string
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -20,6 +21,7 @@ type PostInfo struct {
 func NewPostInfo(pi table.PostInfo, svc string) PostInfo {
 	return PostInfo{
 		ID:        pi.ID,
+		Title:     pi.Title,
 		Content:   pi.Content,
 		Author:    pi.Author,
 		Extra:     pi.Extra,
@@ -32,6 +34,7 @@ func NewPostInfo(pi table.PostInfo, svc string) PostInfo {
 func (p *PostInfo) ToTable() table.PostInfo {
 	return table.PostInfo{
 		ID:        p.ID,
+		Title:     p.Title,
 		Content:   p.Content,
 		Author:    p.Author,
 		Extra:     p.Extra,

@@ -8,6 +8,7 @@ import (
 	"IM-Backend/service/identity"
 	"context"
 	"errors"
+	"log"
 	"time"
 )
 
@@ -34,6 +35,7 @@ func NewPostSvc(dw GormWriter, dr GormPostReader, cw WriteCache, cr ReadCache,
 
 func (p *PostSvc) Callback(conf configs.AppConf) {
 	p.postExpire = time.Duration(conf.Cache.PostExpire) * time.Second
+	log.Printf("post expire has been changed to %d\n", p.postExpire)
 }
 
 func (p *PostSvc) Create(ctx context.Context, svc string, postInfo table.PostInfo) error {
@@ -53,29 +55,10 @@ func (p *PostSvc) Update(ctx context.Context, svc, userID string, postID uint64,
 	if oldPostInfo.Author != userID {
 		return errcode.ERRNoRightRecord
 	}
-	newPostInfo := oldPostInfo
-	tmpCnt := 0
-	content, ok := updates["content"]
-	if ok {
-		contentStr, okk := content.(string)
-		if okk {
-			tmpCnt++
-			newPostInfo.Content = contentStr
-		}
+	newPostInfo, err := p.updatePostInfoFromMap(oldPostInfo, updates)
+	if err != nil {
+		return err
 	}
-
-	extra, ok := updates["extra"]
-	if ok {
-		extraMap, okk := extra.(map[string]interface{})
-		if okk {
-			tmpCnt++
-			newPostInfo.Extra = extraMap
-		}
-	}
-	if tmpCnt == 0 {
-		return errcode.ERRUpdateQueryEmpty
-	}
-	newPostInfo.UpdatedAt = time.Now()
 	if err := p.cw.DelKV(ctx, &oldPostInfo); err != nil {
 		return err
 	}
@@ -233,4 +216,31 @@ func (p *PostSvc) delLike(ctx context.Context, svc string, postID uint64) error 
 		}
 	}
 	return nil
+}
+
+func (p *PostSvc) updatePostInfoFromMap(oldPostInfo model.PostInfo, updates map[string]interface{}) (model.PostInfo, error) {
+	newPostInfo := oldPostInfo
+	tmpCnt := 0
+	content, ok := updates["content"]
+	if ok {
+		contentStr, okk := content.(string)
+		if okk {
+			tmpCnt++
+			newPostInfo.Content = contentStr
+		}
+	}
+
+	extra, ok := updates["extra"]
+	if ok {
+		extraMap, okk := extra.(map[string]interface{})
+		if okk {
+			tmpCnt++
+			newPostInfo.Extra = extraMap
+		}
+	}
+	if tmpCnt == 0 {
+		return model.PostInfo{}, errcode.ERRUpdateQueryEmpty
+	}
+	newPostInfo.UpdatedAt = time.Now()
+	return newPostInfo, nil
 }

@@ -10,6 +10,7 @@ import (
 	"IM-Backend/service/identity"
 	"context"
 	"errors"
+	"log"
 	"time"
 )
 
@@ -36,6 +37,7 @@ func NewCommentService(dw GormWriter, dr GormCommentReader, cw WriteCache, cr Re
 
 func (c *CommentSvc) Callback(conf configs.AppConf) {
 	c.commentExpire = time.Duration(conf.Cache.CommentExpire) * time.Second
+	log.Printf("comment expire has been changed to %v", c.commentExpire)
 }
 
 func (c *CommentSvc) GetCommentUserIDByID(ctx context.Context, svc string, commentID uint64) (string, error) {
@@ -107,29 +109,11 @@ func (c *CommentSvc) Update(ctx context.Context, svc, userID string, commentID u
 		return errcode.ERRNoRightRecord
 	}
 	//对评论信息进行更新
-	newComment := oldComment
-	content, ok := updates["content"]
-	tmpCnt := 0 //查看是否更新了
-	if ok {
-		contentStr, okk := content.(string)
-		if okk {
-			tmpCnt++
-			newComment.Content = contentStr
-		}
+	newComment, err := c.updateCommentFromMap(oldComment, updates)
+	if err != nil {
+		return err
 	}
-	extra, ok := updates["extra"]
-	if ok {
-		extraMap, okk := extra.(map[string]interface{})
-		if okk {
-			tmpCnt++
-			newComment.Extra = extraMap
-		}
-	}
-	//未更新任何内容，直接返回
-	if tmpCnt == 0 {
-		return errcode.ERRUpdateQueryEmpty
-	}
-	newComment.UpdatedAt = time.Now()
+
 	//删除原来评论的缓存
 	if err := c.cw.DelKV(ctx, &oldComment); err != nil {
 		return err
@@ -383,4 +367,32 @@ func (c *CommentSvc) delLike(ctx context.Context, svc string, commentID uint64) 
 		}
 	}
 	return nil
+}
+
+func (c *CommentSvc) updateCommentFromMap(oldComment model.PostComment, updates map[string]interface{}) (model.PostComment, error) {
+	//对评论信息进行更新
+	newComment := oldComment
+	content, ok := updates["content"]
+	tmpCnt := 0 //查看是否更新了
+	if ok {
+		contentStr, okk := content.(string)
+		if okk {
+			tmpCnt++
+			newComment.Content = contentStr
+		}
+	}
+	extra, ok := updates["extra"]
+	if ok {
+		extraMap, okk := extra.(map[string]interface{})
+		if okk {
+			tmpCnt++
+			newComment.Extra = extraMap
+		}
+	}
+	//未更新任何内容，直接返回
+	if tmpCnt == 0 {
+		return model.PostComment{}, errcode.ERRUpdateQueryEmpty
+	}
+	newComment.UpdatedAt = time.Now()
+	return newComment, nil
 }

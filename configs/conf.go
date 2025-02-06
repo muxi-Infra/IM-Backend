@@ -16,7 +16,7 @@ type AppConf struct {
 	Svc        []ServiceConfig `yaml:"svc"`
 	DB         DBConfig        `yaml:"db"`
 	Cache      CacheConfig     `yaml:"cache"`
-	Clean      CleanConfig
+	Clean      CleanConfig     `yaml:"clean"`
 	notifyList []Notifyer
 }
 
@@ -86,7 +86,6 @@ type DBConfig struct {
 type CacheConfig struct {
 	Addr          string `yaml:"addr"`
 	Password      string `yaml:"password"`
-	AppKeyExpire  uint64 `yaml:"appkeyexpire"`  //以秒为单位
 	PostExpire    uint64 `yaml:"postexpire"`    //帖子缓存
 	CommentExpire uint64 `yaml:"commentexpire"` //评论缓存
 }

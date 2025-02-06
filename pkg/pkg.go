@@ -1,6 +1,10 @@
 package pkg
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"encoding/hex"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -58,4 +62,51 @@ func Unique[T comparable](slice []T) []T {
 		}
 	}
 	return result
+}
+
+// DecryptAES 使用 AES 的 CFB 模式解密
+func DecryptAES(ciphertext string, key []byte) ([]byte, error) {
+	ciphertextBytes, err := hex.DecodeString(ciphertext)
+	if err != nil {
+		return nil, err
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	// 使用前 AES BlockSize 的长度作为 IV
+	iv := ciphertextBytes[:aes.BlockSize]
+	ciphertextBytes = ciphertextBytes[aes.BlockSize:]
+
+	mode := cipher.NewCFBDecrypter(block, iv)
+	mode.XORKeyStream(ciphertextBytes, ciphertextBytes)
+
+	return ciphertextBytes, nil
+}
+
+// EncryptAES 使用 AES 的 CFB 模式对明文进行加密，并将结果进行 Hex 编码
+func EncryptAES(plaintext string, key []byte) (string, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+
+	// 生成 IV
+	iv := make([]byte, aes.BlockSize)
+	if _, err := rand.Read(iv); err != nil {
+		return "", err
+	}
+
+	// 使用 CFB 加密模式
+	stream := cipher.NewCFBEncrypter(block, iv)
+	ciphertext := make([]byte, len(plaintext))
+	stream.XORKeyStream(ciphertext, []byte(plaintext))
+
+	// 将 IV 和加密后的数据拼接在一起
+	ciphertextWithIV := append(iv, ciphertext...)
+
+	// 返回 Hex 编码的密文
+	return hex.EncodeToString(ciphertextWithIV), nil
 }
