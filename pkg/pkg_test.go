@@ -1,8 +1,10 @@
 package pkg
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestReadYamlContent(t *testing.T) {
@@ -168,5 +170,22 @@ func TestUnique(t *testing.T) {
 				t.Errorf("Unique() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestAES(t *testing.T) {
+	secret := "W7K8pJ3aQv2LcXgH"
+	appKey := fmt.Sprintf("%d", time.Now().Unix())
+	encryptedKey, err := EncryptAES(appKey, []byte(secret))
+	if err != nil {
+		t.Error(err)
+	}
+	t.Log(encryptedKey)
+	decryptedKey, err := DecryptAES(encryptedKey, []byte(secret))
+	if err != nil {
+		t.Error(err)
+	}
+	if string(decryptedKey) != appKey {
+		t.Error("Decrypted key does not match the original key")
 	}
 }
