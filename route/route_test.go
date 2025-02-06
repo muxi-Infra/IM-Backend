@@ -6,6 +6,7 @@ import (
 	"IM-Backend/configs"
 	"IM-Backend/controller"
 	"IM-Backend/dao/pg"
+	"IM-Backend/middleware"
 	"IM-Backend/pkg"
 	"IM-Backend/service"
 	"IM-Backend/service/identity"
@@ -66,7 +67,10 @@ func TestMain(m *testing.M) {
 	ac.AddNotifyer(postSvc, commentSvc, svcManager) //添加配置通知
 	ac.StartListen(ncClient)                        //开启监听
 
-	testR = newRoute(postCtrl, commentCtrl, authSvc)
+	testR = newRoute(postCtrl, commentCtrl)
+	//加载中间件
+	loadMiddleware(testR, middleware.LockMiddleware(),
+		middleware.AuthMiddleware(authSvc))
 	code := m.Run()
 
 	// 退出

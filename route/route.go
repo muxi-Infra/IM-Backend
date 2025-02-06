@@ -18,8 +18,11 @@ type App struct {
 func NewApp(pc *controller.PostController, cc *controller.CommentController, authSvc *service.AuthSvc,
 	dectSvc *service.DetectSvc, cleanSvc *service.CleanSvc) *App {
 
-	r := newRoute(pc, cc, authSvc)
-
+	r := newRoute(pc, cc)
+	//加载中间件
+	loadMiddleware(r, middleware.LockMiddleware(),
+		middleware.TimeoutMiddleware(),
+		middleware.AuthMiddleware(authSvc))
 	return &App{
 		r:        r,
 		dectSvc:  dectSvc,
@@ -27,12 +30,8 @@ func NewApp(pc *controller.PostController, cc *controller.CommentController, aut
 	}
 }
 
-func newRoute(pc *controller.PostController, cc *controller.CommentController, authSvc *service.AuthSvc) *gin.Engine {
+func newRoute(pc *controller.PostController, cc *controller.CommentController) *gin.Engine {
 	r := gin.Default()
-	//加载全局中间件
-	r.Use(middleware.LockMiddleware())
-	//r.Use(middleware.TimeoutMiddleware())
-	r.Use(middleware.AuthMiddleware(authSvc))
 	postGroup := r.Group("/api/v1/posts")
 	{
 		postGroup.POST("/publish", pc.Publish)
@@ -53,6 +52,12 @@ func newRoute(pc *controller.PostController, cc *controller.CommentController, a
 		postCommentGroup.GET("/getlike", cc.GetLike)
 	}
 	return r
+}
+
+func loadMiddleware(r *gin.Engine, middleware ...gin.HandlerFunc) {
+	for _, m := range middleware {
+		r.Use(m)
+	}
 }
 
 func (a *App) Run(ctx context.Context) {
