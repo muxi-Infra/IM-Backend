@@ -2,6 +2,7 @@ package service
 
 import (
 	"IM-Backend/configs"
+	"IM-Backend/global"
 	"IM-Backend/service/identity"
 	"context"
 	"sync"
@@ -26,6 +27,16 @@ func (c *CleanSvc) Callback(conf configs.AppConf) {
 	c.batch1 = conf.Clean.CommentBatch
 	c.batch2 = conf.Clean.PostLikeBatch
 	c.batch3 = conf.Clean.CommentLikeBatch
+	if c.batch1 <= 0 {
+		c.batch1 = 10
+	}
+	if c.batch2 <= 0 {
+		c.batch2 = 10
+	}
+	if c.batch3 <= 0 {
+		c.batch3 = 10
+	}
+	global.Log.Infof("cleanSvc's batch1,batch2,batch3 have been set to [%d,%d,%d]", c.batch1, c.batch2, c.batch3)
 }
 
 func NewCleanSvc(pdc <-chan identity.CommentIdentity, pdpl <-chan identity.PostLikeIdentity, pdcl <-chan identity.CommentLikeIdentity, cleaner TrashCleaner, cf configs.AppConf) *CleanSvc {
@@ -47,6 +58,7 @@ func NewCleanSvc(pdc <-chan identity.CommentIdentity, pdpl <-chan identity.PostL
 	if cs.batch3 <= 0 {
 		cs.batch3 = 10
 	}
+	global.Log.Infof("cleanSvc's batch1,batch2,batch3 have been set to [%d,%d,%d]", cs.batch1, cs.batch2, cs.batch3)
 	return cs
 }
 
@@ -106,14 +118,20 @@ func (c *CleanSvc) Run(ctx context.Context) {
 }
 func (c *CleanSvc) delComment(ctx context.Context, comment []identity.CommentIdentity) {
 	var mp = make(map[string][]uint64)
+
 	for _, v := range comment {
 		mp[v.Svc] = append(mp[v.Svc], v.CommentID)
 	}
+
 	for k, v := range mp {
 		if len(v) == 0 {
 			continue
 		}
 		_ = c.cleaner.DeleteComment(ctx, k, v...)
+	}
+
+	if len(comment) > 0 {
+		global.Log.Infof("cleanSvc has cleaned comment: %+v", comment)
 	}
 }
 func (c *CleanSvc) delPostLike(ctx context.Context, postLike []identity.PostLikeIdentity) {
@@ -121,15 +139,22 @@ func (c *CleanSvc) delPostLike(ctx context.Context, postLike []identity.PostLike
 		svc    string
 		postID uint64
 	}
+
 	var mp = make(map[tmp][]string)
+
 	for _, v := range postLike {
 		mp[tmp{v.Svc, v.PostID}] = append(mp[tmp{v.Svc, v.PostID}], v.UserID)
 	}
+
 	for k, v := range mp {
 		if len(v) == 0 {
 			continue
 		}
 		_ = c.cleaner.DeletePostLike(ctx, k.svc, k.postID, v...)
+	}
+
+	if len(postLike) > 0 {
+		global.Log.Infof("cleanSvc has cleaned post_like: %+v", postLike)
 	}
 }
 func (c *CleanSvc) delCommentLike(ctx context.Context, commentLike []identity.CommentLikeIdentity) {
@@ -138,13 +163,19 @@ func (c *CleanSvc) delCommentLike(ctx context.Context, commentLike []identity.Co
 		commentID uint64
 	}
 	var mp = make(map[tmp][]string)
+
 	for _, v := range commentLike {
 		mp[tmp{v.Svc, v.CommentID}] = append(mp[tmp{v.Svc, v.CommentID}], v.UserID)
 	}
+
 	for k, v := range mp {
 		if len(v) == 0 {
 			continue
 		}
 		_ = c.cleaner.DeleteCommentLike(ctx, k.svc, k.commentID, v...)
+	}
+
+	if len(commentLike) > 0 {
+		global.Log.Infof("cleanSvc has cleaned comment_like: %+v", commentLike)
 	}
 }

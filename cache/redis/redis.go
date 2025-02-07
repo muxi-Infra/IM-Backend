@@ -2,10 +2,10 @@ package redis
 
 import (
 	"IM-Backend/configs"
+	"IM-Backend/global"
 	"context"
 	"fmt"
 	"github.com/redis/go-redis/v9"
-	"log"
 )
 
 func NewRedisClient(cf configs.AppConf) *redis.Client {
@@ -17,6 +17,6 @@ func NewRedisClient(cf configs.AppConf) *redis.Client {
 	if err != nil {
 		panic(fmt.Sprintf("connect redis failed: %v", err))
 	}
-	log.Println("connect to redis successfully")
+	global.Log.Info("connect to redis successfully")
 	return cli
 }

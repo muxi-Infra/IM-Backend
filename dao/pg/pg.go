@@ -2,9 +2,8 @@ package pg
 
 import (
 	"IM-Backend/configs"
+	"IM-Backend/global"
 	"fmt"
-	"log"
-
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -14,11 +13,13 @@ func NewDB(cf configs.AppConf) *gorm.DB {
 	// 连接到 PostgreSQL 数据库
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic(fmt.Sprintf("connect database failed:%v", err))
+		panic(fmt.Sprintf("connect to database failed:%v", err))
 	}
 	//if err := db.AutoMigrate(&table.Svc{}); err != nil {
 	//	panic(err)
 	//}
-	log.Println("connect database successfully")
+
+	global.Log.Info("connect to database successfully")
+
 	return db
 }

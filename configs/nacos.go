@@ -1,13 +1,13 @@
 package configs
 
 import (
+	"IM-Backend/global"
 	"IM-Backend/pkg"
 	"fmt"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients/config_client"
 	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/v2/vo"
-	"log"
 )
 
 type NacosConfig struct {
@@ -53,9 +53,9 @@ func NewNacosClient(nc NacosConfig) *NacosClient {
 		"clientConfig":  cc,
 	})
 	if err != nil {
-		panic(fmt.Sprintf("connect nocos failed:%v", err))
+		panic(fmt.Sprintf("connect to nocos failed:%v", err))
 	}
-	log.Println("connect nocos successfully")
+	global.Log.Info("connect to nocos successfully")
 	return &NacosClient{
 		nc:     nc,
 		client: configClient,

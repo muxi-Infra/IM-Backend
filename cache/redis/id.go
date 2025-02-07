@@ -2,6 +2,7 @@ package redis
 
 import (
 	"IM-Backend/errcode"
+	"IM-Backend/global"
 	"context"
 	"fmt"
 	"github.com/redis/go-redis/v9"
@@ -19,6 +20,7 @@ func NewIDer(client *redis.Client) *IDer {
 func (I *IDer) GeneratePostID(ctx context.Context, svc string) (uint64, error) {
 	res, err := I.client.Incr(ctx, I.getPostIDKey(svc)).Result()
 	if err != nil {
+		global.Log.Errorf("generatePostID in svc:%v failed: %v", svc, err)
 		return 0, errcode.ERRGenerateID.WrapError(err)
 	}
 	// 使用秒级时间戳扩大时间范围
@@ -31,6 +33,7 @@ func (I *IDer) GeneratePostID(ctx context.Context, svc string) (uint64, error) {
 func (I *IDer) GenerateCommentID(ctx context.Context, svc string) (uint64, error) {
 	res, err := I.client.Incr(ctx, I.getCommentIDKey(svc)).Result()
 	if err != nil {
+		global.Log.Errorf("generateCommentID in svc:%v failed: %v", svc, err)
 		return 0, errcode.ERRGenerateID.WrapError(err)
 	}
 	// 使用秒级时间戳扩大时间范围

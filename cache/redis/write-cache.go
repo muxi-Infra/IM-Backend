@@ -3,6 +3,7 @@ package redis
 import (
 	"IM-Backend/cache"
 	"IM-Backend/errcode"
+	"IM-Backend/global"
 	"context"
 	"github.com/redis/go-redis/v9"
 	"time"
@@ -20,6 +21,7 @@ func (w *Writer) DelKV(ctx context.Context, kv cache.KV) error {
 	key := kv.GetStrKey()
 	err := w.cli.Del(ctx, key).Err()
 	if err != nil {
+		global.Log.Warnf("delete key:%v from cache failed: %v", key, err)
 		return errcode.ERRDelKV.WrapError(err)
 	}
 	return nil
@@ -52,6 +54,7 @@ func (w *Writer) SetKV(ctx context.Context, expire time.Duration, kv ...cache.KV
 	// 执行 Lua 脚本
 	err := w.cli.Eval(ctx, script, nil, args...).Err()
 	if err != nil {
+		global.Log.Warnf("set kv[%+v] in cache failed: %v", kv, err)
 		return errcode.ERRSetKV.WrapError(err)
 	}
 	return nil
@@ -84,6 +87,7 @@ func (w *Writer) AddKVToSet(ctx context.Context, expire time.Duration, kv ...cac
 	// 执行 Lua 脚本
 	err := w.cli.Eval(ctx, script, nil, args...).Err()
 	if err != nil {
+		global.Log.Warnf("add kv[%+v] to set in cache failed: %v", kv, err)
 		return errcode.ERRAddSet.WrapError(err)
 	}
 	return nil

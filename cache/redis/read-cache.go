@@ -3,6 +3,7 @@ package redis
 import (
 	"IM-Backend/cache"
 	"IM-Backend/errcode"
+	"IM-Backend/global"
 	"context"
 	"github.com/redis/go-redis/v9"
 )
@@ -47,10 +48,12 @@ func (r *Reader) MGetKV(ctx context.Context, kv ...cache.KV) []bool {
 func (r *Reader) GetKV(ctx context.Context, kv cache.KV) error {
 	res, err := r.cli.Get(ctx, kv.GetStrKey()).Result()
 	if err != nil {
+		global.Log.Warnf("get key:%v from cache failed: %v", kv.GetStrKey(), err)
 		return errcode.ERRGetKV.WrapError(err)
 	}
 	err = kv.ReadFromStrVal(res)
 	if err != nil {
+		global.Log.Warnf("read from val[%v] in cache failed: %v", res, err)
 		return errcode.ERRConvertJson.WrapError(err)
 	}
 	return nil
@@ -59,6 +62,7 @@ func (r *Reader) GetKV(ctx context.Context, kv cache.KV) error {
 func (r *Reader) GetValFromSet(ctx context.Context, kv cache.KV) ([]string, error) {
 	cli, err := r.cli.SMembers(ctx, kv.GetSetKey()).Result()
 	if err != nil {
+		global.Log.Warnf("get set[key:%v] from cache failed: %v", kv.GetSetKey(), err)
 		return nil, errcode.ERRGetSet.WrapError(err)
 	}
 	return cli, nil

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"IM-Backend/global"
 	"IM-Backend/service/identity"
 	"context"
 	"time"
@@ -40,10 +41,12 @@ func (ds *DetectSvc) Run(ctx context.Context) {
 	for {
 		select {
 		case post := <-ds.pfp:
+			global.Log.Infof("detectSvc has found trash_post[%+v]", post)
 			go ds.delComment(ctx, post)
 			go ds.delCommentLikeByPost(ctx, post)
 			ds.delPostLike(ctx, post)
 		case comment := <-ds.pfc:
+			global.Log.Infof("detectSvc has found trash_comment[%+v]", comment)
 			ds.delCommentLikeByComment(ctx, comment)
 		case <-ctx.Done():
 			return

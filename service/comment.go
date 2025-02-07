@@ -4,13 +4,13 @@ import (
 	"IM-Backend/cache"
 	"IM-Backend/configs"
 	"IM-Backend/errcode"
+	"IM-Backend/global"
 	"IM-Backend/model"
 	"IM-Backend/model/table"
 	"IM-Backend/pkg"
 	"IM-Backend/service/identity"
 	"context"
 	"errors"
-	"log"
 	"time"
 )
 
@@ -37,7 +37,7 @@ func NewCommentService(dw GormWriter, dr GormCommentReader, cw WriteCache, cr Re
 
 func (c *CommentSvc) Callback(conf configs.AppConf) {
 	c.commentExpire = time.Duration(conf.Cache.CommentExpire) * time.Second
-	log.Printf("comment expire has been changed to %v", c.commentExpire)
+	global.Log.Infof("comment expire has been changed to %v", c.commentExpire)
 }
 
 func (c *CommentSvc) GetCommentUserIDByID(ctx context.Context, svc string, commentID uint64) (string, error) {
@@ -51,9 +51,14 @@ func (c *CommentSvc) GetCommentUserIDByID(ctx context.Context, svc string, comme
 	if err == nil {
 		return comment.UserID, nil
 	}
+
 	//如果没有,则直接查询数据库
 	//也无需考虑缓存，因为只获取userID
-	return c.dr.GetUserIDByCommentID(ctx, svc, commentID)
+	userID, err := c.dr.GetUserIDByCommentID(ctx, svc, commentID)
+	if err != nil {
+		return "", err
+	}
+	return userID, nil
 }
 
 func (c *CommentSvc) Like(ctx context.Context, svc string, postID uint64, commentID uint64, userID string) error {
@@ -61,12 +66,13 @@ func (c *CommentSvc) Like(ctx context.Context, svc string, postID uint64, commen
 	if err := c.delLike(ctx, svc, commentID); err != nil {
 		return err
 	}
-	err := c.dw.Create(ctx, svc, &table.CommentLikeInfo{
+	tmp := table.CommentLikeInfo{
 		CommentID: commentID,
 		UserID:    userID,
 		PostID:    postID,
 		CreatedAt: time.Now(),
-	})
+	}
+	err := c.dw.Create(ctx, svc, &tmp)
 	if err != nil {
 		return err
 	}
@@ -106,6 +112,7 @@ func (c *CommentSvc) Update(ctx context.Context, svc, userID string, commentID u
 
 	//验证userid是否配对
 	if oldComment.UserID != userID {
+		global.Log.Errorf("update comment[id:%v] but it's user_id != %v in svc[%v]", commentID, userID, svc)
 		return errcode.ERRNoRightRecord
 	}
 	//对评论信息进行更新
@@ -188,11 +195,15 @@ func (c *CommentSvc) Delete(ctx context.Context, svc string, userID string, comm
 	}
 
 	if err == nil {
+		//检查user_id是否配对
 		if found[0].UserID != userID {
+			global.Log.Errorf("delete comment[id:%v] in svc[%v],but it's user_id != %v", commentID, svc, userID)
 			return errcode.ERRNoRightRecord
 		}
 	} else {
+		//检查user_id是否配对
 		if left[0].UserID != userID {
+			global.Log.Errorf("delete comment[id:%v] in svc[%v],but it's user_id != %v", commentID, svc, userID)
 			return errcode.ERRNoRightRecord
 		}
 	}
@@ -210,10 +221,12 @@ func (c *CommentSvc) Delete(ctx context.Context, svc string, userID string, comm
 	if err := c.dw.Delete(ctx, svc, &table.PostCommentInfo{ID: commentID}); err != nil {
 		return err
 	}
+
 	c.pendingComments <- identity.CommentIdentity{
 		Svc:       svc,
 		CommentID: commentID,
 	}
+
 	return nil
 
 }
@@ -222,15 +235,19 @@ func (c *CommentSvc) getCommentsByIDFromCache(ctx context.Context, svc string, c
 	if len(commentID) == 0 {
 		return nil, nil
 	}
+
 	var (
 		kvs    = make([]cache.KV, len(commentID))
 		found  = make([]model.PostComment, 0)
 		leftID = make([]uint64, 0)
 	)
+
 	for i, id := range commentID {
 		kvs[i] = &model.PostComment{ID: id, Svc: svc}
 	}
+
 	res := c.cr.MGetKV(ctx, kvs...)
+
 	for i, ok := range res {
 		if ok {
 			found = append(found, *(kvs[i].(*model.PostComment)))
@@ -238,6 +255,11 @@ func (c *CommentSvc) getCommentsByIDFromCache(ctx context.Context, svc string, c
 			leftID = append(leftID, commentID[i])
 		}
 	}
+
+	if len(leftID) > 0 {
+		global.Log.Infof("get comments from cache by id[%v] in svc[%v],but left id[%v]", commentID, svc, leftID)
+	}
+
 	return found, leftID
 }
 
@@ -263,6 +285,7 @@ func (c *CommentSvc) getCommentsByID(ctx context.Context, svc string, commentID 
 	for _, comment := range leftComments {
 		left = append(left, model.NewPostComment(comment, svc))
 	}
+
 	return found, left, errcode.ERRCacheMiss
 }
 
@@ -271,10 +294,13 @@ func (c *CommentSvc) setCommentCache(ctx context.Context, comments ...model.Post
 	if len(comments) == 0 {
 		return nil
 	}
+
 	var kvs = make([]cache.KV, len(comments))
+
 	for i, comment := range comments {
 		kvs[i] = &comment
 	}
+
 	return c.cw.SetKV(ctx, c.commentExpire, kvs...)
 }
 
@@ -282,18 +308,22 @@ func (c *CommentSvc) getLikeFromCache(ctx context.Context, svc string, commentID
 	if len(commentID) == 0 {
 		return nil, nil
 	}
+
 	var (
 		kvs    = make([]cache.KV, len(commentID))
 		found  = make(map[uint64]int64)
 		leftID = make([]uint64, 0)
 	)
+
 	for i, id := range commentID {
 		kvs[i] = &model.PostCommentLike{
 			Svc:       svc,
 			CommentID: id,
 		}
 	}
+
 	res := c.cr.MGetKV(ctx, kvs...)
+
 	for i, ok := range res {
 		if ok {
 			found[commentID[i]] = (kvs[i].(*model.PostCommentLike)).Like
@@ -301,16 +331,23 @@ func (c *CommentSvc) getLikeFromCache(ctx context.Context, svc string, commentID
 			leftID = append(leftID, commentID[i])
 		}
 	}
+
+	if len(leftID) > 0 {
+		global.Log.Infof("get like from cache by id[%v] in svc[%v],but left id[%v]", commentID, svc, leftID)
+	}
+
 	return found, leftID
 }
 func (c *CommentSvc) getLike(ctx context.Context, svc string, commentID ...uint64) (map[uint64]int64, map[uint64]int64, error) {
 	if len(commentID) == 0 {
 		return nil, nil, nil
 	}
+
 	//如果没有某个comment则不查询其
 	var unexist = make(map[uint64]int64) //unexist是用来存储不存在的
 	var rightCommentID []uint64          //rightCommentID是用来存储存在的commentID
 	exist := c.dr.CheckCommentExist(ctx, svc, commentID...)
+
 	for id, ok := range exist {
 		if ok {
 			//这里是存在的comment

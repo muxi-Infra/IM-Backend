@@ -2,6 +2,7 @@ package pg
 
 import (
 	"IM-Backend/dao"
+	"IM-Backend/global"
 	"IM-Backend/model/table"
 	"gorm.io/gorm"
 	"sync"
@@ -51,6 +52,7 @@ func (p *PgTable) CheckTableExist(db *gorm.DB, t dao.Table, svc string) bool {
 	FROM pg_tables 
 	WHERE schemaname = 'public' AND tablename = ?`, tableName).Scan(&count).Error
 	if err != nil {
+		global.Log.Infof("someone is trying to check table[%v] but failed: %v", tableName, err)
 		return false
 	}
 	return count > 0

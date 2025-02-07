@@ -1,6 +1,7 @@
 package service
 
 import (
+	"IM-Backend/global"
 	"IM-Backend/pkg"
 	"strconv"
 	"time"
@@ -25,6 +26,7 @@ func (a *AuthSvc) Verify(svc string, appKey string) bool {
 	// 将字符串解析为整数时间戳
 	decryptedTimestamp, err := strconv.ParseInt(decryptedStr, 10, 64)
 	if err != nil {
+		global.Log.Errorf("parse appKey[%s] failed: %v", appKey, err)
 		return false
 	}
 	// 获取当前时间戳
