@@ -69,8 +69,9 @@ func TestWriteRepo_Create(t *testing.T) {
 		tt = &table.PostCommentInfo{
 			ID:           1,
 			UserID:       "hello",
+			RootID: 0,
 			FatherID:     0,
-			TargetUserID: "none",
+			TargetUserID: nil,
 			PostID:       1,
 			Content:      "hello world",
 			Extra: map[string]interface{}{

@@ -11,8 +11,9 @@ type PostComment struct {
 	ID           uint64
 	UserID       string
 	Content      string
+	RootID       uint64
 	FatherID     uint64
-	TargetUserID string
+	TargetUserID *string
 	PostID       uint64
 	CreatedAt    time.Time //创建时间
 	UpdatedAt    time.Time
@@ -25,6 +26,7 @@ func NewPostComment(t table.PostCommentInfo, svc string) PostComment {
 		ID:           t.ID,
 		UserID:       t.UserID,
 		Content:      t.Content,
+		RootID:       t.RootID,
 		FatherID:     t.FatherID,
 		TargetUserID: t.TargetUserID,
 		PostID:       t.PostID,
@@ -39,6 +41,7 @@ func (c *PostComment) ToTable() table.PostCommentInfo {
 		ID:        c.ID,
 		UserID:    c.UserID,
 		Content:   c.Content,
+		RootID:    c.RootID,
 		FatherID:  c.FatherID,
 		PostID:    c.PostID,
 		CreatedAt: c.CreatedAt,
@@ -52,7 +55,7 @@ func (c *PostComment) ReadFromStrVal(jsonStr string) error {
 }
 
 func (c *PostComment) GetStrKey() string {
-	return fmt.Sprintf("svc:%s:comment:%d", c.Svc, c.ID)
+	return fmt.Sprintf("svc:%s:comment:%d:info", c.Svc, c.ID)
 }
 
 func (c *PostComment) GetStrVal() string {

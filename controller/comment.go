@@ -39,9 +39,12 @@ func (cc *CommentController) Publish(c *gin.Context) {
 	}
 
 	var extra map[string]interface{}
-	if err := json.Unmarshal([]byte(formdata.Extra), &extra); err != nil {
-		resp.SendResp(c, resp.ParamBindErrResp)
-		return
+
+	if formdata.Extra != nil {
+		if err := json.Unmarshal([]byte(*formdata.Extra), &extra); err != nil {
+			resp.SendResp(c, resp.ParamBindErrResp)
+			return
+		}
 	}
 
 	createdTime := time.Now()
@@ -53,8 +56,9 @@ func (cc *CommentController) Publish(c *gin.Context) {
 	var comment = table.PostCommentInfo{
 		ID:           id,
 		UserID:       query.UserID,
+		RootID:       0,
 		FatherID:     0,
-		TargetUserID: "none",
+		TargetUserID: nil,
 		PostID:       query.PostID,
 		Content:      formdata.Content,
 		Extra:        extra,
@@ -82,20 +86,25 @@ func (cc *CommentController) Reply(c *gin.Context) {
 		resp.SendResp(c, resp.ParamBindErrResp)
 		return
 	}
+	if query.RootCommentID == 0 || query.FatherCommentID == 0 {
+		resp.SendResp(c, resp.ParamErrResp)
+		return
+	}
 	if err := c.ShouldBind(&formdata); err != nil {
 		resp.SendResp(c, resp.ParamBindErrResp)
 		return
 	}
 
 	var extra map[string]interface{}
-	if err := json.Unmarshal([]byte(formdata.Extra), &extra); err != nil {
-		resp.SendResp(c, resp.ParamBindErrResp)
-		return
+
+	if formdata.Extra != nil {
+		if err := json.Unmarshal([]byte(*formdata.Extra), &extra); err != nil {
+			resp.SendResp(c, resp.ParamBindErrResp)
+			return
+		}
 	}
 
-	createdTime := time.Now()
-
-	userID, err := cc.commentSvc.GetCommentUserIDByID(c, query.Svc, query.CommentID)
+	userID, err := cc.commentSvc.GetCommentUserIDByID(c, query.Svc, query.FatherCommentID)
 	if err != nil {
 		resp.SendResp(c, resp.NewErrResp(err))
 		return
@@ -106,12 +115,13 @@ func (cc *CommentController) Reply(c *gin.Context) {
 		resp.SendResp(c, resp.NewErrResp(err))
 		return
 	}
-
+	createdTime := time.Now()
 	var comment = table.PostCommentInfo{
 		ID:           id,
 		UserID:       query.UserID,
-		FatherID:     query.CommentID,
-		TargetUserID: userID,
+		RootID:       query.RootCommentID,
+		FatherID:     query.FatherCommentID,
+		TargetUserID: &userID,
 		PostID:       query.PostID,
 		Content:      formdata.Content,
 		Extra:        extra,
@@ -195,7 +205,7 @@ func (cc *CommentController) GetInfo(c *gin.Context) {
 		resp.SendResp(c, resp.ParamBindErrResp)
 		return
 	}
-	comments, err := cc.commentSvc.FindComment(c, query.Svc, query.FatherCommentID, cursor, query.Limit)
+	comments, err := cc.commentSvc.FindComment(c, query.Svc, query.RootCommentID, cursor, query.Limit)
 	if err != nil {
 		resp.SendResp(c, resp.NewErrResp(err))
 		return
@@ -212,14 +222,18 @@ func (cc *CommentController) GetInfo(c *gin.Context) {
 func (cc *CommentController) GetLike(c *gin.Context) {
 	var (
 		query    req.GetCommentLikeQuery
-		formdata req.GetCommentLikeFormData
+		formdata req.GetCommentLikeJSON
 	)
 	if err := c.ShouldBindQuery(&query); err != nil {
 		resp.SendResp(c, resp.ParamBindErrResp)
 		return
 	}
-	if err := c.ShouldBind(&formdata); err != nil {
+	if err := c.ShouldBindBodyWithJSON(&formdata); err != nil {
 		resp.SendResp(c, resp.ParamBindErrResp)
+		return
+	}
+	if len(formdata.CommentIDs) == 0 {
+		resp.SendResp(c, resp.SuccessResp)
 		return
 	}
 	likes, err := cc.commentSvc.GetLike(c, query.Svc, formdata.CommentIDs...)

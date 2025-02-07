@@ -18,8 +18,8 @@ type PostInfo struct {
 	Content   string    `gorm:"column:content"`          //内容
 	Author    string    `gorm:"column:author"`           //作者ID
 	Extra     JSON      `gorm:"type:jsonb;column:extra"` // 其他补充内容，json格式
-	CreatedAt time.Time `gorm:"column:"created_at"`      //创建时间
-	UpdatedAt time.Time `gorm:"column:"updated_at"`      //修改时间
+	CreatedAt time.Time `gorm:"column:created_at"`       //创建时间
+	UpdatedAt time.Time `gorm:"column:updated_at"`       //修改时间
 }
 
 func (pi *PostInfo) PgCreate(db *gorm.DB, svc string) error {

@@ -38,9 +38,11 @@ func (p *PostController) Publish(c *gin.Context) {
 	}
 
 	var extra map[string]interface{}
-	if err := json.Unmarshal([]byte(formdata.Extra), &extra); err != nil {
-		resp.SendResp(c, resp.ParamBindErrResp)
-		return
+	if formdata.Extra != nil {
+		if err := json.Unmarshal([]byte(*formdata.Extra), &extra); err != nil {
+			resp.SendResp(c, resp.ParamBindErrResp)
+			return
+		}
 	}
 
 	createdTime := time.Now()

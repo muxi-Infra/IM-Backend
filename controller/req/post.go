@@ -5,10 +5,10 @@ type PublishPostQuery struct {
 	Svc    string `form:"svc"`
 }
 type PublishPostFormData struct {
-	Author  string `form:"author"`
-	Title   string `form:"title"`
-	Content string `form:"content"`
-	Extra   string `form:"extra"`
+	Author  string  `form:"author"`
+	Title   string  `form:"title"`
+	Content string  `form:"content"`
+	Extra   *string `form:"extra"`
 }
 
 type GetPostInfoQuery struct {

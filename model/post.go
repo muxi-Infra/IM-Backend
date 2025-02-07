@@ -48,7 +48,7 @@ func (p *PostInfo) ReadFromStrVal(jsonStr string) error {
 }
 
 func (p *PostInfo) GetStrKey() string {
-	return fmt.Sprintf("svc:%s:post:%d", p.Svc, p.ID)
+	return fmt.Sprintf("svc:%s:post:%d:info", p.Svc, p.ID)
 }
 
 func (p *PostInfo) GetStrVal() string {

@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"os"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -29,6 +30,13 @@ func ReadYamlContent(content []byte, aim any) error {
 
 // MergeMaps 合并两个 map 的函数
 func MergeMaps[K comparable, V any](map1, map2 map[K]V) map[K]V {
+	if len(map1) == 0 {
+		return map2
+	}
+	if len(map2) == 0 {
+		return map1
+	}
+
 	result := make(map[K]V)
 
 	// 将第一个 map 中的所有键值对复制到结果 map 中
@@ -109,4 +117,16 @@ func EncryptAES(plaintext string, key []byte) (string, error) {
 
 	// 返回 Hex 编码的密文
 	return hex.EncodeToString(ciphertextWithIV), nil
+}
+
+// FormatTimeInShanghai 将 time.Time 转换为 Asia/Shanghai 时区的格式化时间字符串
+func FormatTimeInShanghai(t time.Time) string {
+	// 获取 Shanghai 时区
+	location, _ := time.LoadLocation("Asia/Shanghai")
+
+	// 将时间转换为 Asia/Shanghai 时区
+	shanghaiTime := t.In(location)
+
+	// 格式化并返回
+	return shanghaiTime.Format("2006-01-02T15:04")
 }

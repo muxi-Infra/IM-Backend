@@ -10,6 +10,7 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
+
 func TestAuthSvc_Verify(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -25,14 +26,14 @@ func TestAuthSvc_Verify(t *testing.T) {
 		want      bool
 	}{
 		{
-			name: "valid verification",
-			svc:  "testsvc",
+			name:   "valid verification",
+			svc:    "testsvc",
 			appKey: func() string {
 				enc, err := pkg.EncryptAES(fmt.Sprintf("%d", time.Now().Unix()), []byte("testsecret666666"))
-				if err != nil {
-					t.Error(err)
-				}
-				t.Log(enc)
+                if err!=nil {
+                    t.Error(err)
+                }
+                t.Log(enc)
 				return enc
 			}(),
 			secret: "testsecret666666",
@@ -52,8 +53,8 @@ func TestAuthSvc_Verify(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "expired timestamp",
-			svc:  "testsvc",
+			name:   "expired timestamp",
+			svc:    "testsvc",
 			appKey: func() string {
 				enc, _ := pkg.EncryptAES(fmt.Sprintf("%d", time.Now().Add(-20*time.Second).Unix()), []byte("testsecret666666"))
 				return enc
@@ -65,8 +66,8 @@ func TestAuthSvc_Verify(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "invalid secret",
-			svc:  "testsvc",
+			name:   "invalid secret",
+			svc:    "testsvc",
 			appKey: func() string {
 				enc, _ := pkg.EncryptAES(fmt.Sprintf("%d", time.Now().Unix()), []byte("nonosecret666666"))
 				return enc

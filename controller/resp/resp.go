@@ -10,6 +10,7 @@ import (
 var (
 	TimeoutErrResp   = NewResp(http.StatusGatewayTimeout, "Request timeout", nil)
 	ParamBindErrResp = NewResp(http.StatusBadRequest, "bind param failed", nil)
+	ParamErrResp     = NewResp(http.StatusBadRequest, "something of params is wrong", nil)
 	AuthErrResp      = NewResp(http.StatusBadRequest, "bind authentication", nil)
 	SuccessResp      = NewResp(http.StatusOK, "success", nil)
 )

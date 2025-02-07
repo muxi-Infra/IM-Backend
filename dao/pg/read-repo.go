@@ -188,7 +188,7 @@ func (r *ReadRepo) GetCommentLike(ctx context.Context, svc string, ids ...uint64
 	return result, nil
 }
 
-func (r *ReadRepo) GetChildCommentIDAfterCursor(ctx context.Context, svc string, fatherID uint64, cursor time.Time, limit uint) ([]uint64, error) {
+func (r *ReadRepo) GetChildCommentIDAfterCursor(ctx context.Context, svc string, rootID uint64, cursor time.Time, limit uint) ([]uint64, error) {
 	tmp := CommentInfoPool.Get().(*table.PostCommentInfo)
 	defer CommentInfoPool.Put(tmp)
 	if !r.tt.CheckTableExist(r.db, tmp, svc) {
@@ -196,8 +196,8 @@ func (r *ReadRepo) GetChildCommentIDAfterCursor(ctx context.Context, svc string,
 	}
 
 	var commentIDs []uint64
-	err := r.db.WithContext(ctx).Table(tmp.TableName(svc)).Select("id").Where("father_id = ? AND created_at > ?", fatherID, cursor).
-		Order("created_at").Limit(int(limit)).Pluck("id", &commentIDs).Error
+	err := r.db.WithContext(ctx).Table(tmp.TableName(svc)).Select("id").Where("root_id = ? AND created_at > ?", rootID, cursor).
+		Order("created_at DESC").Limit(int(limit)).Pluck("id", &commentIDs).Error
 	if err != nil {
 		return nil, errcode.ERRFindData.WrapError(err)
 	}
@@ -215,15 +215,15 @@ func (r *ReadRepo) GetChildCommentCnt(ctx context.Context, svc string, commentID
 	}
 
 	type Result struct {
-		FatherID   uint64
+		RootID     uint64
 		ChildCount int
 	}
 	var results []Result
 	// 查询每个给定 ID 的子评论个数
 	err := r.db.WithContext(ctx).Table(tmp.TableName(svc)).
-		Select("father_id, COUNT(*) as child_count").
-		Where("father_id IN ?", commentID).
-		Group("father_id").
+		Select("root_id, COUNT(*) as child_count").
+		Where("root_id IN ?", commentID).
+		Group("root_id").
 		Scan(&results).Error
 	if err != nil {
 		return nil, errcode.ERRFindData.WrapError(err)
@@ -231,7 +231,7 @@ func (r *ReadRepo) GetChildCommentCnt(ctx context.Context, svc string, commentID
 
 	var mp = make(map[uint64]int, len(results))
 	for _, res := range results {
-		mp[res.FatherID] = res.ChildCount
+		mp[res.RootID] = res.ChildCount
 	}
 	return mp, nil
 }
@@ -243,9 +243,9 @@ func (r *ReadRepo) GetUserIDByCommentID(ctx context.Context, svc string, comment
 		return "", errcode.ERRNoTable
 	}
 	var userID string
-	err := r.db.WithContext(ctx).Table(tmp.TableName(svc)).Where("id = ?", commentID).Pluck("user_id", &userID).Error
-	if err != nil {
-		return "", errcode.ERRFindData.WrapError(err)
+	res := r.db.WithContext(ctx).Table(tmp.TableName(svc)).Where("id = ?", commentID).Pluck("user_id", &userID)
+	if res.Error != nil || res.RowsAffected == 0 {
+		return "", errcode.ERRFindData.WrapError(res.Error)
 	}
 	return userID, nil
 }

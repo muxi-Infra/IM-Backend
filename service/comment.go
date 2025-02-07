@@ -41,6 +41,8 @@ func (c *CommentSvc) Callback(conf configs.AppConf) {
 }
 
 func (c *CommentSvc) GetCommentUserIDByID(ctx context.Context, svc string, commentID uint64) (string, error) {
+	//可以尝试看看缓存中有没有comment的信息
+	//如果有可以直接返回
 	var comment = model.PostComment{
 		ID:  commentID,
 		Svc: svc,
@@ -49,11 +51,9 @@ func (c *CommentSvc) GetCommentUserIDByID(ctx context.Context, svc string, comme
 	if err == nil {
 		return comment.UserID, nil
 	}
-	if !errors.Is(err, errcode.ERRCacheMiss) {
-		return "", err
-	}
+	//如果没有,则直接查询数据库
+	//也无需考虑缓存，因为只获取userID
 	return c.dr.GetUserIDByCommentID(ctx, svc, commentID)
-
 }
 
 func (c *CommentSvc) Like(ctx context.Context, svc string, postID uint64, commentID uint64, userID string) error {
@@ -131,9 +131,9 @@ func (c *CommentSvc) Update(ctx context.Context, svc, userID string, commentID u
 	}()
 	return nil
 }
-func (c *CommentSvc) FindComment(ctx context.Context, svc string, fatherID uint64, cursor time.Time, limit uint) ([]model.PostComment, error) {
-	//首先,先从数据库中获取father_id == fatherID的评论(且创建时间大于cursor同时限制个数为limit)有哪些
-	childCommentIDs, err := c.dr.GetChildCommentIDAfterCursor(ctx, svc, fatherID, cursor, limit)
+func (c *CommentSvc) FindComment(ctx context.Context, svc string, rootID uint64, cursor time.Time, limit uint) ([]model.PostComment, error) {
+	//首先,先从数据库中获取root_id == rootID的评论(且创建时间大于cursor同时限制个数为limit)有哪些
+	childCommentIDs, err := c.dr.GetChildCommentIDAfterCursor(ctx, svc, rootID, cursor, limit)
 	if err != nil {
 		//获取失败，则返回
 		return nil, err
@@ -311,13 +311,13 @@ func (c *CommentSvc) getLike(ctx context.Context, svc string, commentID ...uint6
 	var unexist = make(map[uint64]int64) //unexist是用来存储不存在的
 	var rightCommentID []uint64          //rightCommentID是用来存储存在的commentID
 	exist := c.dr.CheckCommentExist(ctx, svc, commentID...)
-	for i, ok := range exist {
+	for id, ok := range exist {
 		if ok {
 			//这里是存在的comment
-			rightCommentID = append(rightCommentID, commentID[i])
+			rightCommentID = append(rightCommentID, id)
 		} else {
 			//不存在的直接置为0，无需查询
-			unexist[commentID[i]] = 0
+			unexist[id] = 0
 		}
 	}
 
@@ -332,9 +332,11 @@ func (c *CommentSvc) getLike(ctx context.Context, svc string, commentID ...uint6
 		return pkg.MergeMaps(found, unexist), nil, nil
 	}
 	res, err := c.dr.GetCommentLike(ctx, svc, leftID...)
+
 	if err != nil {
 		return nil, nil, err
 	}
+
 	return pkg.MergeMaps(found, unexist), res, errcode.ERRCacheMiss
 }
 
