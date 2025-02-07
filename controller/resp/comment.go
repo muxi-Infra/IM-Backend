@@ -15,11 +15,11 @@ type Comment struct {
 	PostID       uint64                 `json:"post_id"`
 	Time         string                 `json:"time"`
 	Svc          string                 `json:"svc"`
-	ChildNum     int                    `json:"child_num"`
+	ChildNum     *int                   `json:"child_num"`
 	Extra        map[string]interface{} `json:"extra"`
 }
 
-func NewCommentResp(c model.PostComment, childNum int) Comment {
+func NewCommentResp(c model.PostComment, childNum *int) Comment {
 	return Comment{
 		ID:           c.ID,
 		UserID:       c.UserID,

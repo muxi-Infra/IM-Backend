@@ -281,8 +281,12 @@ func (cc *CommentController) getCommentResp(ctx context.Context, svc string, com
 		return nil, err
 	}
 	for _, comment := range comments {
-		res = append(res, resp.NewCommentResp(comment, childNums[comment.ID]))
+		num := childNums[comment.ID]
+		if comment.RootID == 0 && comment.FatherID == 0 {
+			res = append(res, resp.NewCommentResp(comment, &num))
+		} else {
+			res = append(res, resp.NewCommentResp(comment, nil))
+		}
 	}
 	return res, nil
-
 }
