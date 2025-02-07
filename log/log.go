@@ -20,7 +20,7 @@ func newZapLogger() *zap.Logger {
 	encoder := getEncoder() // 获取日志输出编码
 	level := zapcore.InfoLevel
 	core := zapcore.NewCore(encoder, writeSyncer, level)
-	logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1), zap.AddStacktrace(zapcore.ErrorLevel)) // classLog.Addcaller() 输出日志打印文件和行数如： classLog/logger_test.go:33
+	logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(2), zap.AddStacktrace(zapcore.ErrorLevel))
 	return logger
 }
 
