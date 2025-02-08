@@ -68,3 +68,6 @@ type LikeCommentQuery struct {
 	CommentID uint64 `form:"comment_id"`
 	UserID    string `form:"user_id"`
 }
+type LikeCommentJson struct {
+	Like bool `json:"like"`
+}

@@ -209,20 +209,73 @@ func TestDeletePost(t *testing.T) {
 
 // Test for PUT for /api/v1/posts/like
 func TestLikePost(t *testing.T) {
-	w := httptest.NewRecorder()
-	appKey, err := pkg.EncryptAES(fmt.Sprintf("%d", time.Now().Unix()), []byte("W7K8pJ3aQv2LcXgH"))
-	if err != nil {
-		t.Error(err)
-	}
-	var postId uint64 = 7468308864811663361
-	userID := "john"
-	testurl := fmt.Sprintf("/api/v1/posts/like?appKey=%s&svc=cc&post_id=%d&user_id=%s", appKey, postId, userID)
-	req, err := http.NewRequest("PUT", testurl, nil)
-	if err != nil {
-		t.Error(err)
-	}
-	testR.ServeHTTP(w, req)
-	t.Log(w.Body)
+
+	t.Run("like", func(t *testing.T) {
+		w := httptest.NewRecorder()
+
+		appKey, err := pkg.EncryptAES(fmt.Sprintf("%d", time.Now().Unix()), []byte("W7K8pJ3aQv2LcXgH"))
+		if err != nil {
+			t.Error(err)
+		}
+
+		var postId uint64 = 7468308864811663361
+		userID := "john"
+
+		js := map[string]interface{}{
+			"like": true,
+		}
+
+		jsdata, err := json.Marshal(&js)
+		if err != nil {
+			t.Error(err)
+		}
+
+		testurl := fmt.Sprintf("/api/v1/posts/like?appKey=%s&svc=cc&post_id=%d&user_id=%s", appKey, postId, userID)
+		req, err := http.NewRequest("PUT", testurl, bytes.NewReader(jsdata))
+		if err != nil {
+			t.Error(err)
+		}
+
+		// 设置 Content-Type 为 application/json
+		req.Header.Set("Content-Type", "application/json")
+
+		testR.ServeHTTP(w, req)
+
+		t.Log(w.Body)
+	})
+	t.Run("cancel like", func(t *testing.T) {
+		w := httptest.NewRecorder()
+
+		appKey, err := pkg.EncryptAES(fmt.Sprintf("%d", time.Now().Unix()), []byte("W7K8pJ3aQv2LcXgH"))
+		if err != nil {
+			t.Error(err)
+		}
+
+		var postId uint64 = 7468308864811663361
+		userID := "john"
+
+		js := map[string]interface{}{
+			"like": false,
+		}
+
+		jsdata, err := json.Marshal(&js)
+		if err != nil {
+			t.Error(err)
+		}
+
+		testurl := fmt.Sprintf("/api/v1/posts/like?appKey=%s&svc=cc&post_id=%d&user_id=%s", appKey, postId, userID)
+		req, err := http.NewRequest("PUT", testurl, bytes.NewReader(jsdata))
+		if err != nil {
+			t.Error(err)
+		}
+
+		// 设置 Content-Type 为 application/json
+		req.Header.Set("Content-Type", "application/json")
+
+		testR.ServeHTTP(w, req)
+
+		t.Log(w.Body)
+	})
 }
 
 // Test for GET for /api/v1/posts/getlike
@@ -451,25 +504,82 @@ func TestGetCommentInfo(t *testing.T) {
 
 // Test for PUT for /api/v1/posts/comments/like
 func TestLikeComment(t *testing.T) {
-	w := httptest.NewRecorder()
-	appKey, err := pkg.EncryptAES(fmt.Sprintf("%d", time.Now().Unix()), []byte("W7K8pJ3aQv2LcXgH"))
-	if err != nil {
-		t.Error(err)
-	}
-	var postID uint64 = 7468308864811663361
-	var CommentID uint64 = 7468556624295100421
-	userID := "mike"
-	testurl := fmt.Sprintf("/api/v1/posts/comments/like?appKey=%s&svc=cc&post_id=%d&comment_id=%d&user_id=%s", appKey, postID, CommentID, userID)
-	req, err := http.NewRequest("PUT", testurl, nil)
-	if err != nil {
-		t.Error(err)
-	}
-	testR.ServeHTTP(w, req)
-	t.Log(w.Body)
+
+	t.Run("like", func(t *testing.T) {
+		w := httptest.NewRecorder()
+
+		appKey, err := pkg.EncryptAES(fmt.Sprintf("%d", time.Now().Unix()), []byte("W7K8pJ3aQv2LcXgH"))
+		if err != nil {
+			t.Error(err)
+		}
+
+		var postID uint64 = 7468308864811663361
+
+		var CommentID uint64 = 7468556624295100421
+
+		userID := "mike"
+
+		js := map[string]interface{}{
+			"like": true,
+		}
+
+		jsdata, err := json.Marshal(js)
+		if err != nil {
+			t.Error(err)
+		}
+
+		testurl := fmt.Sprintf("/api/v1/posts/comments/like?appKey=%s&svc=cc&post_id=%d&comment_id=%d&user_id=%s", appKey, postID, CommentID, userID)
+
+		req, err := http.NewRequest("PUT", testurl, bytes.NewReader(jsdata))
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		testR.ServeHTTP(w, req)
+
+		t.Log(w.Body)
+	})
+	t.Run("cancel like", func(t *testing.T) {
+		w := httptest.NewRecorder()
+
+		appKey, err := pkg.EncryptAES(fmt.Sprintf("%d", time.Now().Unix()), []byte("W7K8pJ3aQv2LcXgH"))
+		if err != nil {
+			t.Error(err)
+		}
+
+		var postID uint64 = 7468308864811663361
+
+		var CommentID uint64 = 7468556624295100421
+
+		userID := "mike"
+
+		js := map[string]interface{}{
+			"like": false,
+		}
+
+		jsdata, err := json.Marshal(js)
+		if err != nil {
+			t.Error(err)
+		}
+
+		testurl := fmt.Sprintf("/api/v1/posts/comments/like?appKey=%s&svc=cc&post_id=%d&comment_id=%d&user_id=%s", appKey, postID, CommentID, userID)
+
+		req, err := http.NewRequest("PUT", testurl, bytes.NewReader(jsdata))
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		testR.ServeHTTP(w, req)
+
+		t.Log(w.Body)
+	})
+
 }
 
 // Test for GET for /api/v1/posts/comments/getlike
-func TestGetLike(t *testing.T) {
+func TestGetCommentLike(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	// 加密 appKey

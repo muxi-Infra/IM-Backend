@@ -54,17 +54,17 @@ func (mr *MockGormWriterMockRecorder) Create(ctx, svc, t interface{}) *gomock.Ca
 }
 
 // Delete mocks base method.
-func (m *MockGormWriter) Delete(ctx context.Context, svc string, t dao.Table) error {
+func (m *MockGormWriter) Delete(ctx context.Context, svc string, t dao.Table, where map[string]interface{}) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, svc, t)
+	ret := m.ctrl.Call(m, "Delete", ctx, svc, t, where)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockGormWriterMockRecorder) Delete(ctx, svc, t interface{}) *gomock.Call {
+func (mr *MockGormWriterMockRecorder) Delete(ctx, svc, t, where interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockGormWriter)(nil).Delete), ctx, svc, t)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockGormWriter)(nil).Delete), ctx, svc, t, where)
 }
 
 // GetGormTx mocks base method.

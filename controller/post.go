@@ -120,16 +120,30 @@ func (p *PostController) GetLike(c *gin.Context) {
 
 func (p *PostController) Like(c *gin.Context) {
 	var query req.LikePostQuery
+	var js req.LikePostJson
 	if err := c.ShouldBindQuery(&query); err != nil {
 		resp.SendResp(c, resp.ParamBindErrResp)
 		return
 	}
-
-	err := p.postSvc.Like(c, query.Svc, query.PostID, query.UserID)
-	if err != nil {
-		resp.SendResp(c, resp.NewErrResp(err))
+	if err := c.ShouldBindJSON(&js); err != nil {
+		resp.SendResp(c, resp.ParamBindErrResp)
 		return
 	}
+
+	if js.Like {
+		err := p.postSvc.Like(c, query.Svc, query.PostID, query.UserID)
+		if err != nil {
+			resp.SendResp(c, resp.NewErrResp(err))
+			return
+		}
+	} else {
+		err := p.postSvc.CancelLike(c, query.Svc, query.PostID, query.UserID)
+		if err != nil {
+			resp.SendResp(c, resp.NewErrResp(err))
+			return
+		}
+	}
+
 	resp.SendResp(c, resp.SuccessResp)
 }
 

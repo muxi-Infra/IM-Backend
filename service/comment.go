@@ -66,16 +66,38 @@ func (c *CommentSvc) Like(ctx context.Context, svc string, postID uint64, commen
 	if err := c.delLike(ctx, svc, commentID); err != nil {
 		return err
 	}
-	tmp := table.CommentLikeInfo{
+	err := c.dw.Create(ctx, svc, &table.CommentLikeInfo{
 		CommentID: commentID,
 		UserID:    userID,
 		PostID:    postID,
 		CreatedAt: time.Now(),
-	}
-	err := c.dw.Create(ctx, svc, &tmp)
+	})
 	if err != nil {
 		return err
 	}
+	//延迟删除
+	go func() {
+		time.AfterFunc(time.Second, func() {
+			_ = c.delLike(context.Background(), svc, commentID)
+		})
+	}()
+	return nil
+}
+
+func (c *CommentSvc) CancelLike(ctx context.Context, svc string, commentID uint64, userID string) error {
+	//点赞需要删除之前的缓存的点赞信息
+	if err := c.delLike(ctx, svc, commentID); err != nil {
+		return err
+	}
+
+	err := c.dw.Delete(ctx, svc, &table.CommentLikeInfo{}, map[string]interface{}{
+		"comment_id": commentID,
+		"user_id":    userID,
+	})
+	if err != nil {
+		return err
+	}
+
 	//延迟删除
 	go func() {
 		time.AfterFunc(time.Second, func() {
@@ -218,7 +240,7 @@ func (c *CommentSvc) Delete(ctx context.Context, svc string, userID string, comm
 	}
 
 	//删除基本信息
-	if err := c.dw.Delete(ctx, svc, &table.PostCommentInfo{ID: commentID}); err != nil {
+	if err := c.dw.Delete(ctx, svc, &table.PostCommentInfo{ID: commentID}, nil); err != nil {
 		return err
 	}
 

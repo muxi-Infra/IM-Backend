@@ -257,16 +257,32 @@ func (cc *CommentController) GetLike(c *gin.Context) {
 func (cc *CommentController) Like(c *gin.Context) {
 	var (
 		query req.LikeCommentQuery
+		js    req.LikeCommentJson
 	)
 	if err := c.ShouldBindQuery(&query); err != nil {
 		resp.SendResp(c, resp.ParamBindErrResp)
 		return
 	}
-	err := cc.commentSvc.Like(c, query.Svc, query.PostID, query.CommentID, query.UserID)
-	if err != nil {
-		resp.SendResp(c, resp.NewErrResp(err))
+
+	if err := c.ShouldBindBodyWithJSON(&js); err != nil {
+		resp.SendResp(c, resp.ParamBindErrResp)
 		return
 	}
+
+	if js.Like {
+		err := cc.commentSvc.Like(c, query.Svc, query.PostID, query.CommentID, query.UserID)
+		if err != nil {
+			resp.SendResp(c, resp.NewErrResp(err))
+			return
+		}
+	} else {
+		err := cc.commentSvc.CancelLike(c, query.Svc, query.CommentID, query.UserID)
+		if err != nil {
+			resp.SendResp(c, resp.NewErrResp(err))
+			return
+		}
+	}
+
 	resp.SendResp(c, resp.SuccessResp)
 }
 

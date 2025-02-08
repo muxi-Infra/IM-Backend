@@ -15,7 +15,7 @@ type GormWriter interface {
 	GetGormTx(ctx context.Context) (tx *gorm.DB)
 	Create(ctx context.Context, svc string, t dao.Table) error
 	Update(ctx context.Context, svc string, t dao.Table) error
-	Delete(ctx context.Context, svc string, t dao.Table) error
+	Delete(ctx context.Context, svc string, t dao.Table, where map[string]interface{}) error
 	InTx(ctx context.Context, f func(ctx context.Context) error) error
 }
 

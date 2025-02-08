@@ -41,7 +41,12 @@ func NewPgTable() *PgTable {
 }
 
 func (p *PgTable) NewTable(db *gorm.DB, t dao.Table, svc string) error {
-	return t.PgCreate(db, svc)
+	err := t.PgCreate(db, svc)
+	if err != nil {
+		global.Log.Infof("someone is trying to create table[%v] but failed: %v", t.TableName(svc), err)
+		return err
+	}
+	return nil
 }
 
 func (p *PgTable) CheckTableExist(db *gorm.DB, t dao.Table, svc string) bool {

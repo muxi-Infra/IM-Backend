@@ -37,6 +37,10 @@ type LikePostQuery struct {
 	UserID string `form:"user_id"`
 }
 
+type LikePostJson struct {
+	Like bool `json:"like"`
+}
+
 type UpdatePostQuery struct {
 	AppKey string `form:"appKey"`
 	Svc    string `form:"svc"`

@@ -140,7 +140,7 @@ func (p *PostSvc) Delete(ctx context.Context, svc string, userID string, postID 
 	}
 
 	//删除主要信息
-	if err := p.dw.Delete(ctx, svc, &table.PostInfo{ID: postID}); err != nil {
+	if err := p.dw.Delete(ctx, svc, &table.PostInfo{ID: postID}, nil); err != nil {
 		return err
 	}
 
@@ -164,6 +164,29 @@ func (p *PostSvc) Like(ctx context.Context, svc string, postID uint64, userID st
 		PostID:    postID,
 		UserID:    userID,
 		CreatedAt: time.Now(),
+	}); err != nil {
+		return err
+	}
+
+	//延迟删除缓存
+	go func() {
+		time.AfterFunc(time.Second, func() {
+			_ = p.delLike(context.Background(), svc, postID)
+		})
+	}()
+
+	return nil
+}
+
+func (p *PostSvc) CancelLike(ctx context.Context, svc string, postID uint64, userID string) error {
+	//删除点赞缓存(根据点赞数选择相应策略)
+	if err := p.delLike(ctx, svc, postID); err != nil {
+		return err
+	}
+
+	if err := p.dw.Delete(ctx, svc, &table.PostLikeInfo{}, map[string]interface{}{
+		"post_id": postID,
+		"user_id": userID,
 	}); err != nil {
 		return err
 	}

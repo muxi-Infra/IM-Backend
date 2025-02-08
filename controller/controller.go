@@ -14,6 +14,7 @@ type PostService interface {
 	GetLike(ctx context.Context, svc string, postID uint64) (int64, error)
 	Delete(ctx context.Context, svc string, userID string, postID uint64) error
 	Like(ctx context.Context, svc string, postID uint64, userID string) error
+	CancelLike(ctx context.Context, svc string, postID uint64, userID string) error
 }
 
 type PostIDGenerator interface {
@@ -29,6 +30,7 @@ type CommentService interface {
 	Delete(ctx context.Context, svc string, userID string, commentID uint64) error
 	GetCommentUserIDByID(ctx context.Context, svc string, commentID uint64) (string, error)
 	Like(ctx context.Context, svc string, postID uint64, commentID uint64, userID string) error
+	CancelLike(ctx context.Context, svc string, commentID uint64, userID string) error
 }
 type CommentIDGenerator interface {
 	GenerateCommentID(ctx context.Context, svc string) (uint64, error)
