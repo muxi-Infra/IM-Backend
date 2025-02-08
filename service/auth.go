@@ -32,8 +32,14 @@ func (a *AuthSvc) Verify(svc string, appKey string) bool {
 	// 获取当前时间戳
 	currentTimestamp := time.Now().Unix()
 	// 计算时间差
+
 	diff := currentTimestamp - decryptedTimestamp
-	if diff >= 0 && diff <= 10 {
+
+	if diff < 0 {
+		global.Log.Warnf("time may be slower than right time,diff: %v", diff)
+	}
+
+	if diff >= -10 && diff <= 10 {
 		return true
 	}
 	return false
