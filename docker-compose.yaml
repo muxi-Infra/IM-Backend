@@ -1,0 +1,47 @@
+# yaml 配置
+version: "3.7"
+
+services:
+  # PostgreSQL 数据库服务
+  im_pg:
+    image: postgres
+    container_name: pg_db
+    environment:
+      POSTGRES_USER: qcsj       # 管理员用户名
+      POSTGRES_PASSWORD: 12345678   # 管理员密码
+      POSTGRES_DB: im_db        # 初始数据库名称
+    ports:
+      - "5432:5432"             # 暴露数据库端口
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data  # 数据持久化
+    restart: "always"     # 自动重启策略
+  im_redis:
+    image: redis
+    container_name: redis_cache
+    ports:
+      - "6379:6379"             # 暴露 Redis 端口
+    command: redis-server --requirepass 12345678  # 设置访问密码
+    volumes:
+        - ./redis_data:/data        # 数据持久化
+    restart: "always"
+
+  # Nacos 配置中心服务
+  im_nacos:
+    image: nacos/nacos-server:v2.4.3
+    container_name: nacos_server
+    ports:
+      - "8848:8848"             # 控制台端口
+    restart: "always"
+
+  im_app:
+    image: im_backend
+    container_name: im_app
+    depends_on:
+      - im_pg
+      - im_redis
+      - im_nacos
+    ports:
+     - "8181:8181"
+    volumes:
+      - "./configs/config.yaml:/data/config/config.yaml"
+    restart: "always"

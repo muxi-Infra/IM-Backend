@@ -34,3 +34,6 @@ go.work.sum
 configs/config.yaml
 
 configs/tmp/
+
+pg_data/
+redis_data/

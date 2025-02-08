@@ -1,0 +1,23 @@
+## nacos 中关于app的示例配置
+
+
+svc:
+  - name: "cc"
+    secret: "W7K8pJ3aQv2LcXgH"
+db:
+  host: "127.0.0.1"
+  user: "qcsj"
+  password: "12345678"
+  dbname: "mydb"
+  port: 5432
+cache:
+  addr: "127.0.0.1:6379"
+  password: "12345678"
+  post_expire: 604800
+  comment_expire: 604800
+  postlike_expire: 300
+  commentlike_expire: 300
+clean:
+  commentbatch: 30
+  postlikebatch: 30
+  commentlikebatch: 30
