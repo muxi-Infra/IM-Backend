@@ -13,29 +13,32 @@ import (
 )
 
 type PostSvc struct {
-	dw          GormWriter
-	dr          GormPostReader
-	cw          WriteCache
-	cr          ReadCache
-	postExpire  time.Duration
-	pendingPost chan<- identity.PostIdentity
+	dw             GormWriter
+	dr             GormPostReader
+	cw             WriteCache
+	cr             ReadCache
+	postExpire     time.Duration
+	postLikeExpire time.Duration
+	pendingPost    chan<- identity.PostIdentity
 }
 
 func NewPostSvc(dw GormWriter, dr GormPostReader, cw WriteCache, cr ReadCache,
 	pendingPost chan<- identity.PostIdentity, cf configs.AppConf) *PostSvc {
 	return &PostSvc{
-		dw:          dw,
-		dr:          dr,
-		cw:          cw,
-		cr:          cr,
-		pendingPost: pendingPost,
-		postExpire:  time.Duration(cf.Cache.PostExpire) * time.Second,
+		dw:             dw,
+		dr:             dr,
+		cw:             cw,
+		cr:             cr,
+		pendingPost:    pendingPost,
+		postExpire:     time.Duration(cf.Cache.PostExpire) * time.Second,
+		postLikeExpire: time.Duration(cf.Cache.PostLikeExpire) * time.Second,
 	}
 }
 
 func (p *PostSvc) Callback(conf configs.AppConf) {
 	p.postExpire = time.Duration(conf.Cache.PostExpire) * time.Second
-	global.Log.Infof("post expire has been changed to %v", p.postExpire)
+	p.postLikeExpire = time.Duration(conf.Cache.PostLikeExpire) * time.Second
+	global.Log.Infof("post and postlike expire has been changed to [%v,%v]", p.postExpire, p.postLikeExpire)
 }
 
 func (p *PostSvc) Create(ctx context.Context, svc string, postInfo table.PostInfo) error {
@@ -102,7 +105,7 @@ func (p *PostSvc) GetLike(ctx context.Context, svc string, postID uint64) (int64
 	}
 
 	if errors.Is(err, errcode.ERRCacheMiss) {
-		_ = p.cw.SetKV(ctx, 5*time.Minute, &model.PostLike{
+		_ = p.cw.SetKV(ctx, p.postLikeExpire, &model.PostLike{
 			PostID: postID,
 			Svc:    svc,
 			Like:   res,

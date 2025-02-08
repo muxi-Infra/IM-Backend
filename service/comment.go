@@ -15,29 +15,32 @@ import (
 )
 
 type CommentSvc struct {
-	dw            GormWriter
-	dr            GormCommentReader
-	cw            WriteCache
-	cr            ReadCache
-	commentExpire time.Duration
+	dw                GormWriter
+	dr                GormCommentReader
+	cw                WriteCache
+	cr                ReadCache
+	commentExpire     time.Duration
+	commentLikeExpire time.Duration
 
 	pendingComments chan<- identity.CommentIdentity
 }
 
 func NewCommentService(dw GormWriter, dr GormCommentReader, cw WriteCache, cr ReadCache, pendingComments chan<- identity.CommentIdentity, cf configs.AppConf) *CommentSvc {
 	return &CommentSvc{
-		dw:              dw,
-		dr:              dr,
-		cw:              cw,
-		cr:              cr,
-		commentExpire:   time.Duration(cf.Cache.CommentExpire) * time.Second,
-		pendingComments: pendingComments,
+		dw:                dw,
+		dr:                dr,
+		cw:                cw,
+		cr:                cr,
+		commentExpire:     time.Duration(cf.Cache.CommentExpire) * time.Second,
+		commentLikeExpire: time.Duration(cf.Cache.CommentLikeExpire) * time.Second,
+		pendingComments:   pendingComments,
 	}
 }
 
 func (c *CommentSvc) Callback(conf configs.AppConf) {
 	c.commentExpire = time.Duration(conf.Cache.CommentExpire) * time.Second
-	global.Log.Infof("comment expire has been changed to %v", c.commentExpire)
+	c.commentLikeExpire = time.Duration(conf.Cache.CommentLikeExpire) * time.Second
+	global.Log.Infof("comment and comment_like expire has been changed to [%v,%v]", c.commentExpire, c.commentLikeExpire)
 }
 
 func (c *CommentSvc) GetCommentUserIDByID(ctx context.Context, svc string, commentID uint64) (string, error) {
@@ -411,7 +414,7 @@ func (c *CommentSvc) setLikeCache(ctx context.Context, svc string, mp map[uint64
 			Like:      like,
 		})
 	}
-	return c.cw.SetKV(ctx, 5*time.Minute, kvs...)
+	return c.cw.SetKV(ctx, c.commentLikeExpire, kvs...)
 }
 
 func (c *CommentSvc) delLike(ctx context.Context, svc string, commentID uint64) error {

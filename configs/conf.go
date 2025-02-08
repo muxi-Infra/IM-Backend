@@ -84,10 +84,12 @@ type DBConfig struct {
 	Port     int    `yaml:"port"`
 }
 type CacheConfig struct {
-	Addr          string `yaml:"addr"`
-	Password      string `yaml:"password"`
-	PostExpire    uint64 `yaml:"postexpire"`    //帖子缓存
-	CommentExpire uint64 `yaml:"commentexpire"` //评论缓存
+	Addr              string `yaml:"addr"`
+	Password          string `yaml:"password"`
+	PostExpire        uint64 `yaml:"post_expire"`        //帖子缓存
+	CommentExpire     uint64 `yaml:"comment_expire"`     //评论缓存
+	PostLikeExpire    uint64 `yaml:"postlike_expire"`    //帖子点赞信息缓存过期时间
+	CommentLikeExpire uint64 `yaml:"commentlike_expire"` //帖子点赞信息缓存过期时间
 }
 
 // CleanConfig 清理数据库中垃圾数据的配置
