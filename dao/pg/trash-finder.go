@@ -143,7 +143,7 @@ func (t *TrashFinder) findTrashPostIDJoinPostLike(ctx context.Context, svc, post
 }
 
 func (t *TrashFinder) findTrashPostIDJoinComment(ctx context.Context, svc, postInfoTableName string) []uint64 {
-	tmpComment := CommentInfoPool.Get().(*table.CommentLikeInfo)
+	tmpComment := CommentInfoPool.Get().(*table.PostCommentInfo)
 	defer CommentInfoPool.Put(tmpComment)
 	if !t.tt.CheckTableExist(t.db, tmpComment, svc) {
 		return nil

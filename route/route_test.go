@@ -23,7 +23,7 @@ import (
 	"time"
 )
 
-var testR *gin.Engine
+var testR = gin.Default()
 
 func TestMain(m *testing.M) {
 	//cctx, cancel := context.WithCancel(context.Background())
@@ -69,10 +69,10 @@ func TestMain(m *testing.M) {
 	ac.AddNotifyer(postSvc, commentSvc, svcManager) //添加配置通知
 	ac.StartListen(ncClient)                        //开启监听
 
-	testR = newRoute(postCtrl, commentCtrl)
 	//加载中间件
 	loadMiddleware(testR, middleware.LockMiddleware(),
 		middleware.AuthMiddleware(authSvc))
+	loadRoute(testR, postCtrl, commentCtrl)
 	code := m.Run()
 
 	// 退出

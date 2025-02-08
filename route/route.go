@@ -17,12 +17,12 @@ type App struct {
 
 func NewApp(pc *controller.PostController, cc *controller.CommentController, authSvc *service.AuthSvc,
 	dectSvc *service.DetectSvc, cleanSvc *service.CleanSvc) *App {
-
-	r := newRoute(pc, cc)
+	r := gin.Default()
 	//加载中间件
 	loadMiddleware(r, middleware.LockMiddleware(),
 		middleware.TimeoutMiddleware(),
 		middleware.AuthMiddleware(authSvc))
+	loadRoute(r, pc, cc)
 	return &App{
 		r:        r,
 		dectSvc:  dectSvc,
@@ -30,8 +30,8 @@ func NewApp(pc *controller.PostController, cc *controller.CommentController, aut
 	}
 }
 
-func newRoute(pc *controller.PostController, cc *controller.CommentController) *gin.Engine {
-	r := gin.Default()
+func loadRoute(r *gin.Engine, pc *controller.PostController, cc *controller.CommentController) {
+
 	postGroup := r.Group("/api/v1/posts")
 	{
 		postGroup.POST("/publish", pc.Publish)
@@ -51,7 +51,6 @@ func newRoute(pc *controller.PostController, cc *controller.CommentController) *
 		postCommentGroup.PUT("/like", cc.Like)
 		postCommentGroup.GET("/getlike", cc.GetLike)
 	}
-	return r
 }
 
 func loadMiddleware(r *gin.Engine, middleware ...gin.HandlerFunc) {
