@@ -25,7 +25,7 @@ func initRedis() *redis.Client {
 func TestWriter_SetKV(t *testing.T) {
 	cli := initRedis()
 	//cli.Set(context.Background(), "hello", "Nihao", 3*time.Minute)
-	w := &Writer{cli}
+	w := NewWriter(cli)
 	err := w.SetKV(context.Background(), 20*time.Minute, &model.PostInfo{
 		ID:        1,
 		Content:   "hello world",
@@ -58,7 +58,7 @@ func TestWriter_SetKV(t *testing.T) {
 
 func TestWriter_AddKVToSet(t *testing.T) {
 	cli := initRedis()
-	w := &Writer{cli}
+	w := NewWriter(cli)
 	err := w.AddKVToSet(context.Background(), 20*time.Minute, &model.PostInfo{
 		Svc:    "testsvc",
 		ID:     1,
@@ -71,7 +71,7 @@ func TestWriter_AddKVToSet(t *testing.T) {
 
 func TestWriter_DelKV(t *testing.T) {
 	cli := initRedis()
-	w := &Writer{cli}
+	w := NewWriter(cli)
 	err := w.DelKV(context.Background(), &model.PostInfo{ID: 1, Svc: "testsvc"})
 	if err != nil {
 		t.Error(err)

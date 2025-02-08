@@ -6,15 +6,21 @@ import (
 	"IM-Backend/global"
 	"context"
 	"github.com/redis/go-redis/v9"
+	"math/rand"
 	"time"
 )
 
 type Writer struct {
 	cli *redis.Client
+	rnd *rand.Rand
 }
 
 func NewWriter(client *redis.Client) *Writer {
-	return &Writer{cli: client}
+	return &Writer{
+		cli: client,
+		// 使用当前时间纳秒作为种子初始化独立随机源
+		rnd: rand.New(rand.NewSource(time.Now().UnixNano())),
+	}
 }
 
 func (w *Writer) DelKV(ctx context.Context, kv cache.KV) error {
@@ -31,7 +37,7 @@ func (w *Writer) SetKV(ctx context.Context, expire time.Duration, kv ...cache.KV
 	if len(kv) == 0 {
 		return nil // nothing to do if no key-value pairs provided.
 	}
-
+	expire = w.RandomExpire(expire)
 	// 构建 ARGV 参数
 	args := make([]interface{}, 0, len(kv)*2+1)
 	args = append(args, int(expire.Seconds())) // 设置过期时间，单位秒
@@ -64,7 +70,7 @@ func (w *Writer) AddKVToSet(ctx context.Context, expire time.Duration, kv ...cac
 	if len(kv) == 0 {
 		return nil
 	}
-
+	expire = w.RandomExpire(expire)
 	// 构建 ARGV 参数
 	args := make([]interface{}, 0, len(kv)*2+1)
 	args = append(args, int(expire.Seconds())) // 设置过期时间，单位秒
@@ -91,4 +97,11 @@ func (w *Writer) AddKVToSet(ctx context.Context, expire time.Duration, kv ...cac
 		return errcode.ERRAddSet.WrapError(err)
 	}
 	return nil
+}
+func (w *Writer) RandomExpire(expire time.Duration) time.Duration {
+	// 生成 [1.0, 1.5) 之间的随机系数
+	randomFactor := 1 + w.rnd.Float64()*0.5
+
+	// 计算并返回随机过期时间
+	return time.Duration(float64(expire) * randomFactor)
 }
