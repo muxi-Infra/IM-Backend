@@ -25,6 +25,7 @@ type GormPostReader interface {
 	GetPostInfosByExtra(ctx context.Context, svc string, key string, value interface{}) ([]table.PostInfo, error)
 	CheckPostExist(ctx context.Context, svc string, id uint64) bool
 	GetPostCommentIds(ctx context.Context, svc string, id uint64) ([]uint64, error)
+	GetPostList(ctx context.Context, svc string, cursor time.Time, limit uint) ([]uint64, error)
 }
 
 type GormCommentReader interface {

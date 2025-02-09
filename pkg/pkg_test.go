@@ -215,49 +215,49 @@ func TestFormatTimeInShanghai(t *testing.T) {
 			args: args{
 				t: time.Date(2023, 10, 1, 12, 34, 0, 0, shanghaiLoc),
 			},
-			want: "2023-10-01T12:34",
+			want: "2023-10-01T12:34:00",
 		},
 		{
 			name: "UTC时间转换",
 			args: args{
 				t: time.Date(2023, 10, 1, 4, 30, 0, 0, utcLoc),
 			},
-			want: "2023-10-01T12:30",
+			want: "2023-10-01T12:30:00",
 		},
 		{
 			name: "纽约夏令时时间转换",
 			args: args{
 				t: time.Date(2023, 7, 1, 3, 30, 0, 0, nyLoc), // EDT (UTC-4)
 			},
-			want: "2023-07-01T15:30", // 3:30 EDT → UTC 7:30 → +8小时 = 15:30
+			want: "2023-07-01T15:30:00", // 3:30 EDT → UTC 7:30 → +8小时 = 15:30
 		},
 		{
 			name: "跨天转换",
 			args: args{
 				t: time.Date(2023, 1, 1, 16, 0, 0, 0, utcLoc), // UTC 16:00 → 上海 00:00 (+1天)
 			},
-			want: "2023-01-02T00:00",
+			want: "2023-01-02T00:00:00",
 		},
 		{
 			name: "月末边界时间",
 			args: args{
 				t: time.Date(2023, 2, 28, 23, 59, 0, 0, utcLoc), // UTC 23:59 → 上海 07:59 (+1天)
 			},
-			want: "2023-03-01T07:59",
+			want: "2023-03-01T07:59:00",
 		},
 		{
 			name: "整点零分",
 			args: args{
 				t: time.Date(2024, 5, 5, 8, 0, 0, 0, utcLoc), // UTC 8:00 → 上海 16:00
 			},
-			want: "2024-05-05T16:00",
+			want: "2024-05-05T16:00:00",
 		},
 		{
 			name: "纽约标准时间转换", // 非夏令时（EST UTC-5）
 			args: args{
 				t: time.Date(2023, 12, 1, 3, 30, 0, 0, nyLoc), // EST 3:30 → UTC 8:30 → 上海 16:30
 			},
-			want: "2023-12-01T16:30",
+			want: "2023-12-01T16:30:00",
 		},
 	}
 

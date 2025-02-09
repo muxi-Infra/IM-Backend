@@ -15,6 +15,7 @@ type PostService interface {
 	Delete(ctx context.Context, svc string, userID string, postID uint64) error
 	Like(ctx context.Context, svc string, postID uint64, userID string) error
 	CancelLike(ctx context.Context, svc string, postID uint64, userID string) error
+	GetList(ctx context.Context, svc string, cursor time.Time, limit uint) ([]uint64, error)
 }
 
 type PostIDGenerator interface {

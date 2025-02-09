@@ -71,6 +71,32 @@ func (p *PostController) Publish(c *gin.Context) {
 		"post_id": id,
 	}))
 }
+
+func (p *PostController) GetList(c *gin.Context) {
+	var query req.GetPostListQuery
+
+	if err := c.ShouldBindQuery(&query); err != nil {
+		resp.SendResp(c, resp.ParamBindErrResp)
+		return
+	}
+
+	cursor, err := time.Parse("2006-01-02T15:04:05", query.Cursor)
+	if err != nil {
+		resp.SendResp(c, resp.ParamBindErrResp)
+		return
+	}
+
+	ids, err := p.postSvc.GetList(c, query.Svc, cursor, query.Limit)
+	if err != nil {
+		resp.SendResp(c, resp.NewErrResp(err))
+		return
+	}
+
+	resp.SendResp(c, resp.WithData(resp.SuccessResp, map[string]interface{}{
+		"post_list": ids,
+	}))
+}
+
 func (p *PostController) GetInfo(c *gin.Context) {
 	var query req.GetPostInfoQuery
 	if err := c.ShouldBindQuery(&query); err != nil {

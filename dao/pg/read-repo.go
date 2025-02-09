@@ -306,3 +306,25 @@ func (r *ReadRepo) CheckCommentExist(ctx context.Context, svc string, commentID 
 	}
 	return result
 }
+
+func (r *ReadRepo) GetPostList(ctx context.Context, svc string, cursor time.Time, limit uint) ([]uint64, error) {
+	tmp := PostInfoPool.Get().(*table.PostInfo)
+	defer PostInfoPool.Put(tmp)
+
+	if !r.tt.CheckTableExist(r.db, tmp, svc) {
+		return nil, errcode.ERRNoTable
+	}
+
+	var postlist []uint64
+
+	err := r.db.WithContext(ctx).Table(tmp.TableName(svc)).
+		Select("id").Where("created_at < ?", cursor).
+		Order("created_at DESC").Limit(int(limit)).
+		Pluck("id", &postlist).Error
+	if err != nil {
+		global.Log.Errorf("get post_list[svc:%v cursor:%v limit:%v] in db failed: %v", svc, cursor, limit, err)
+		return nil, errcode.ERRFindData.WrapError(err)
+	}
+
+	return postlist, nil
+}

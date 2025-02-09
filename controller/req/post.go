@@ -51,3 +51,10 @@ type UpdatePostFormData struct {
 	Content *string `form:"content"`
 	Extra   *string `form:"extra"`
 }
+
+type GetPostListQuery struct {
+	AppKey string `form:"appKey"`
+	Svc    string `form:"svc"`
+	Cursor string `form:"cursor"`
+	Limit  uint   `form:"limit"`
+}

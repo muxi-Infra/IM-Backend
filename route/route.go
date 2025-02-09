@@ -40,6 +40,7 @@ func loadRoute(r *gin.Engine, pc *controller.PostController, cc *controller.Comm
 		postGroup.DELETE("/delete", pc.Delete)
 		postGroup.PUT("/like", pc.Like)
 		postGroup.GET("/getlike", pc.GetLike)
+		postGroup.GET("/getlist", pc.GetList)
 	}
 	postCommentGroup := postGroup.Group("/comments")
 	{

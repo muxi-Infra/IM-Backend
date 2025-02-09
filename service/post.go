@@ -85,6 +85,10 @@ func (p *PostSvc) Update(ctx context.Context, svc, userID string, postID uint64,
 	return nil
 }
 
+func (p *PostSvc) GetList(ctx context.Context, svc string, cursor time.Time, limit uint) ([]uint64, error) {
+	return p.dr.GetPostList(ctx, svc, cursor, limit)
+}
+
 func (p *PostSvc) GetInfo(ctx context.Context, svc string, postID uint64) (model.PostInfo, error) {
 	res, err := p.getPostInfo(ctx, svc, postID)
 	if err == nil { //缓存命中

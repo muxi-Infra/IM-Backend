@@ -110,7 +110,7 @@ func TestGetPostInfo(t *testing.T) {
 		t.Error(err)
 	}
 
-	var postId uint64 = 7468308864811663361
+	var postId uint64 = 7469293073747410955
 
 	testurl := fmt.Sprintf("/api/v1/posts/getinfo?appKey=%s&svc=cc&post_id=%d", appKey, postId)
 	req, err := http.NewRequest("GET", testurl, nil)
@@ -287,6 +287,24 @@ func TestGetPostLike(t *testing.T) {
 	}
 	var postId uint64 = 7468308864811663361
 	testurl := fmt.Sprintf("/api/v1/posts/getlike?appKey=%s&svc=cc&post_id=%d", appKey, postId)
+	req, err := http.NewRequest("GET", testurl, nil)
+	if err != nil {
+		t.Error(err)
+	}
+	testR.ServeHTTP(w, req)
+	t.Log(w.Body)
+}
+
+// Test for GET for /api/v1/posts/getlist
+func TestGetPostList(t *testing.T) {
+	w := httptest.NewRecorder()
+	appKey, err := pkg.EncryptAES(fmt.Sprintf("%d", time.Now().Unix()), []byte("W7K8pJ3aQv2LcXgH"))
+	if err != nil {
+		t.Error(err)
+	}
+	cursor := time.Now().Format("2006-01-02T15:04:05")
+	var limit uint = 5
+	testurl := fmt.Sprintf("/api/v1/posts/getlist?appKey=%s&svc=cc&cursor=%s&limit=%d", appKey, cursor, limit)
 	req, err := http.NewRequest("GET", testurl, nil)
 	if err != nil {
 		t.Error(err)

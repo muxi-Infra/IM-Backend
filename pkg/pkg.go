@@ -128,5 +128,5 @@ func FormatTimeInShanghai(t time.Time) string {
 	shanghaiTime := t.In(location)
 
 	// 格式化并返回
-	return shanghaiTime.Format("2006-01-02T15:04")
+	return shanghaiTime.Format("2006-01-02T15:04:05")
 }
