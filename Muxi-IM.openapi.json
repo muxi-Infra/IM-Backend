@@ -1,0 +1,1867 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Muxi-IM",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "tags": [],
+  "paths": {
+    "/api/v1/posts/comments/publish": {
+      "post": {
+        "summary": "发表评论",
+        "deprecated": false,
+        "description": "对某个帖子进行评论",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "appKey",
+            "in": "query",
+            "description": "秘钥加密当前秒级时间戳（ AES 加密数据）",
+            "required": true,
+            "example": "{{appKey}}",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "svc",
+            "in": "query",
+            "description": "服务名称",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "post_id",
+            "in": "query",
+            "description": "帖子ID",
+            "required": true,
+            "example": 12312,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "用户ID",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "description": "评论内容",
+                    "example": "你好",
+                    "type": "string"
+                  },
+                  "extra": {
+                    "description": "额外内容（json格式）",
+                    "example": "{\r\n    \"image\" : \"www.hello.com\"\r\n}",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "content"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "comment_id": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "comment_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "code": 200,
+                      "msg": "success",
+                      "data": {
+                        "comment_id": 32131
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/posts/comments/reply": {
+      "post": {
+        "summary": "回复评论",
+        "deprecated": false,
+        "description": "对某个帖子里的评论进行回复\n注意：root_comment_id和father_comment_id都不可为0",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "appKey",
+            "in": "query",
+            "description": "秘钥加密当前秒级时间戳（ AES 加密数据）",
+            "required": true,
+            "example": "{{appKey}}",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "svc",
+            "in": "query",
+            "description": "服务名称",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "post_id",
+            "in": "query",
+            "description": "帖子ID",
+            "required": true,
+            "example": 3121,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "root_comment_id",
+            "in": "query",
+            "description": "根评论ID（值不可以为0，因为此时代表其是根评论）",
+            "required": true,
+            "example": 12321,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "father_comment_id",
+            "in": "query",
+            "description": "所回复的评论ID，如果是回复根评论就填根评论ID（值不可为0）",
+            "required": true,
+            "example": 213123,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "用户ID",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "description": "内容",
+                    "example": "你好啊",
+                    "type": "string"
+                  },
+                  "extra": {
+                    "description": "额外内容(json)",
+                    "example": "{\r\n    \"image\":\"www.hello.com\"\r\n}",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "content"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "comment_id": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "comment_id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "code": 200,
+                      "msg": "success",
+                      "data": {
+                        "comment_id": 32131
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/posts/comments/update": {
+      "put": {
+        "summary": "修改评论",
+        "deprecated": false,
+        "description": "对评论进行修改\n**！！！注意，content和extra将直接覆盖原本的，并且这两个不可同时为空**",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "appKey",
+            "in": "query",
+            "description": "秘钥加密当前秒级时间戳（ AES 加密数据）",
+            "required": true,
+            "example": "{{appKey}}",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "svc",
+            "in": "query",
+            "description": "服务名称",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "comment_id",
+            "in": "query",
+            "description": "评论ID",
+            "required": true,
+            "example": 21312,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "用户ID",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "description": "内容",
+                    "example": "你好",
+                    "type": "string"
+                  },
+                  "extra": {
+                    "description": "额外内容",
+                    "example": "{\r\n    \"image\" : \"www.hello.com\"\r\n}",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "状态码"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "消息"
+                    },
+                    "data": {
+                      "type": "null",
+                      "description": "数据"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "code": 200,
+                      "msg": "success",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/posts/comments/delete": {
+      "delete": {
+        "summary": "删除评论",
+        "deprecated": false,
+        "description": "删除评论\n**删除某个评论，会删除其及其子评论**",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "appKey",
+            "in": "query",
+            "description": "秘钥加密当前秒级时间戳（ AES 加密数据）",
+            "required": true,
+            "example": "{{appKey}}",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "svc",
+            "in": "query",
+            "description": "服务名称",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "comment_id",
+            "in": "query",
+            "description": "评论ID",
+            "required": true,
+            "example": 1231,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "用户ID",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "code": 200,
+                      "msg": "success",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/posts/comments/getinfo": {
+      "get": {
+        "summary": "获取某个帖子的(子)评论",
+        "deprecated": false,
+        "description": "+ 比如获取某个帖子的所有根评论（无父亲的），就令`root_comment_id=0`，`cursor`传一个比较早的时间戳即可比如1949年啥的，再用`limit`限制个数，防止个数太多导致服务器吃不消，响应体中有child_cnt表示子评论的个数\n+ 显示子评论的时候，将`root_comment_id`等于其父评论的ID即可",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "appKey",
+            "in": "query",
+            "description": "秘钥加密当前秒级时间戳（ AES 加密数据）",
+            "required": true,
+            "example": "{{appKey}}",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "svc",
+            "in": "query",
+            "description": "服务名称",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "post_id",
+            "in": "query",
+            "description": "帖子ID",
+            "required": true,
+            "example": 23123,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "root_comment_id",
+            "in": "query",
+            "description": "根评论ID（如果想获得根评论，让其等于0）",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "最后一个评论的时间戳，便于分页（注意时区为UTC，如果为上海时区，注意转换）",
+            "required": true,
+            "example": "2024-01-01T09:45:45",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "限制个数",
+            "required": true,
+            "example": 20,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "状态码"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "消息"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "comments": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer",
+                                "title": "评论ID",
+                                "description": "评论的唯一ID"
+                              },
+                              "user_id": {
+                                "type": "string",
+                                "title": "用户ID",
+                                "description": "发表评论的用户ID"
+                              },
+                              "content": {
+                                "type": "string",
+                                "title": "内容",
+                                "description": "评论内容"
+                              },
+                              "root_id": {
+                                "type": "integer",
+                                "title": "根评论ID",
+                                "description": "根评论ID，如果本身就是根评论则为0"
+                              },
+                              "father_id": {
+                                "type": "integer",
+                                "title": "父亲评论ID",
+                                "description": "可以理解为所回复的评论ID"
+                              },
+                              "target_user_id": {
+                                "type": "string",
+                                "title": "所回复的用户id",
+                                "description": "所回复的用户id"
+                              },
+                              "post_id": {
+                                "type": "integer",
+                                "title": "帖子ID",
+                                "description": "所属帖子ID"
+                              },
+                              "time": {
+                                "type": "string",
+                                "title": "发表评论或者修改评论的最新时间",
+                                "description": "发表评论或者修改评论的最新时间（时间应该是上海的时区）",
+                                "examples": [
+                                  "\"2025-02-07T19:29\""
+                                ]
+                              },
+                              "svc": {
+                                "type": "string",
+                                "title": "服务名",
+                                "description": "所属服务名"
+                              },
+                              "child_num": {
+                                "type": "integer",
+                                "title": "该评论的子评论",
+                                "description": "该评论的子评论(当返回的不是root_comment，则为NULL)",
+                                "nullable": true
+                              },
+                              "extra": {
+                                "type": "object",
+                                "properties": {},
+                                "title": "额外字段",
+                                "description": "额外字段"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "user_id",
+                              "content",
+                              "root_id",
+                              "father_id",
+                              "target_user_id",
+                              "post_id",
+                              "time",
+                              "svc",
+                              "child_num"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "comments"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "code": 200,
+                      "msg": "success",
+                      "data": {
+                        "comments": [
+                          {
+                            "id": 42,
+                            "user_id": "58",
+                            "content": "hello",
+                            "father_id": 0,
+                            "target_user_id": "none",
+                            "post_id": 38,
+                            "time": "2024-09-21T02:30",
+                            "svc": "muxi_stack",
+                            "child_num": 0,
+                            "extra": {
+                              "image": "www.hello.com"
+                            }
+                          },
+                          {
+                            "id": 43,
+                            "user_id": "59",
+                            "content": "hello 48",
+                            "father_id": 0,
+                            "target_user_id": "58",
+                            "post_id": 38,
+                            "time": "2024-09-22T02:30",
+                            "svc": "muxi_stack",
+                            "child_num": 0,
+                            "extra": {
+                              "image": "www.hello1com"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/posts/comments/like": {
+      "put": {
+        "summary": "点赞评论",
+        "deprecated": false,
+        "description": "点赞评论",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "appKey",
+            "in": "query",
+            "description": "秘钥加密当前秒级时间戳（ AES 加密数据）",
+            "required": true,
+            "example": "{{appKey}}",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "svc",
+            "in": "query",
+            "description": "服务名",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "post_id",
+            "in": "query",
+            "description": "帖子ID",
+            "required": true,
+            "example": 1232,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "comment_id",
+            "in": "query",
+            "description": "评论ID",
+            "required": true,
+            "example": 1123,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "用户ID",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "like": {
+                    "type": "boolean",
+                    "description": "是否点赞"
+                  }
+                },
+                "required": [
+                  "like"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "code": 200,
+                      "msg": "success",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/posts/comments/getlike": {
+      "get": {
+        "summary": "获取评论的点赞信息",
+        "deprecated": false,
+        "description": "获取评论的点赞信息",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "appKey",
+            "in": "query",
+            "description": "秘钥加密当前秒级时间戳（ AES 加密数据）",
+            "required": true,
+            "example": "{{appKey}}",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "svc",
+            "in": "query",
+            "description": "服务名",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "comment_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "description": "comment_id"
+                    },
+                    "description": "comment_id数组"
+                  }
+                },
+                "required": [
+                  "comment_ids"
+                ]
+              },
+              "example": {
+                "comment_ids": [
+                  1,
+                  2,
+                  3
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "likes": {
+                          "type": "array",
+                          "items": {
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      "required": [
+                        "likes"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "code": 200,
+                      "msg": "success",
+                      "data": {
+                        "likes": [
+                          1,
+                          2
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/posts/publish": {
+      "post": {
+        "summary": "发布帖子",
+        "deprecated": false,
+        "description": "发布帖子\n**比较特殊的就是extra字段，它应该是json格式的字符串**",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "appKey",
+            "in": "query",
+            "description": "秘钥加密当前秒级时间戳（ AES 加密数据）",
+            "required": true,
+            "example": "{{appKey}}",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "svc",
+            "in": "query",
+            "description": "服务名",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "author": {
+                    "description": "作者用户ID",
+                    "example": "cc",
+                    "type": "string"
+                  },
+                  "content": {
+                    "description": "内容",
+                    "example": "我是示例",
+                    "type": "string"
+                  },
+                  "extra": {
+                    "description": "额外字段(json格式)",
+                    "example": "{\r\n    \"label\":\"学习\"  //标签\r\n}",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "author",
+                  "content"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "状态码"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "消息"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "post_id": {
+                          "type": "integer",
+                          "description": "发布的帖子的ID"
+                        }
+                      },
+                      "required": [
+                        "post_id"
+                      ],
+                      "description": "数据"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "code": 200,
+                      "msg": "success",
+                      "data": {
+                        "post_id": 123
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/posts/getinfo": {
+      "get": {
+        "summary": "获取帖子基本信息",
+        "deprecated": false,
+        "description": "获取帖子，没有评论\n**！！！注意，返回值data字段中的extra字段是不确定的结构，根据业务自行处理**",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "appKey",
+            "in": "query",
+            "description": "秘钥加密当前秒级时间戳（ AES 加密数据）",
+            "required": true,
+            "example": "{{appKey}}",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "svc",
+            "in": "query",
+            "description": "服务名",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "post_id",
+            "in": "query",
+            "description": "帖子ID",
+            "required": true,
+            "example": 111,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "title": "状态码",
+                      "description": "状态码"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "title": "消息",
+                      "description": "消息"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "post": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "integer",
+                              "title": "帖子ID",
+                              "description": "帖子ID"
+                            },
+                            "title": {
+                              "type": "string",
+                              "title": "标题",
+                              "description": "标题"
+                            },
+                            "content": {
+                              "type": "string",
+                              "title": "帖子内容",
+                              "description": "帖子内容"
+                            },
+                            "author": {
+                              "type": "string",
+                              "title": "作者",
+                              "description": "作者的用户ID"
+                            },
+                            "time": {
+                              "type": "string",
+                              "title": "创建时间",
+                              "description": "创建时间（Asia/Shanghai）",
+                              "examples": [
+                                "\"2025-02-07T19:33\""
+                              ]
+                            },
+                            "svc": {
+                              "type": "string",
+                              "title": "所属服务",
+                              "description": "所属服务名"
+                            },
+                            "extra": {
+                              "type": "object",
+                              "properties": {},
+                              "title": "额外字段",
+                              "description": "额外字段",
+                              "additionalProperties": true
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "title",
+                            "content",
+                            "author",
+                            "time",
+                            "svc"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "post"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "code": 200,
+                      "msg": "success",
+                      "data": {
+                        "post": {
+                          "id": 111,
+                          "content": "hello world",
+                          "author": "203213",
+                          "created_at": "2022-08-31 07:41:03",
+                          "updated_at": "2024-08-05 18:02:40",
+                          "svc": "muxi_stack",
+                          "extra": {
+                            "label": "study"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/posts/update": {
+      "put": {
+        "summary": "更新帖子",
+        "deprecated": false,
+        "description": "对帖子进行更新\n**！！！注意，content和extra将直接覆盖原本的，并且这两个不可同时为空**",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "appKey",
+            "in": "query",
+            "description": "秘钥加密当前秒级时间戳（ AES 加密数据）",
+            "required": true,
+            "example": "{{appKey}}",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "svc",
+            "in": "query",
+            "description": "服务名称",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "post_id",
+            "in": "query",
+            "description": "帖子ID",
+            "required": true,
+            "example": 1232,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "用户ID（检测是否是该用户）",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "description": "帖子内容",
+                    "example": "我是示例2",
+                    "type": "string"
+                  },
+                  "extra": {
+                    "description": "额外内容（json格式）",
+                    "example": "{\r\n    \"year\" : 2024\r\n}",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "状态码"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "消息"
+                    },
+                    "data": {
+                      "type": "null",
+                      "description": "数据"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "code": 200,
+                      "msg": "success",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/posts/delete": {
+      "delete": {
+        "summary": "删除帖子",
+        "deprecated": false,
+        "description": "对帖子进行删除操作\n**！！！注意：删除帖子将会同时删除所有相关评论**",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "appKey",
+            "in": "query",
+            "description": "秘钥加密当前秒级时间戳（ AES 加密数据）",
+            "required": true,
+            "example": "{{appKey}}",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "svc",
+            "in": "query",
+            "description": "服务名称",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "post_id",
+            "in": "query",
+            "description": "帖子ID",
+            "required": true,
+            "example": 7468918071562863000,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "用户ID（检测是否是该用户）",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "状态码"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "消息"
+                    },
+                    "data": {
+                      "type": "null",
+                      "description": "数据"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "code": 200,
+                      "msg": "success",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/posts/like": {
+      "put": {
+        "summary": "点赞帖子",
+        "deprecated": false,
+        "description": "对帖子进行点赞",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "appKey",
+            "in": "query",
+            "description": "秘钥加密当前秒级时间戳（ AES 加密数据）",
+            "required": true,
+            "example": "{{appKey}}",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "svc",
+            "in": "query",
+            "description": "服务名称",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "post_id",
+            "in": "query",
+            "description": "帖子ID",
+            "required": true,
+            "example": 7472003966910333000,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "用户ID",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "like": {
+                    "type": "boolean",
+                    "description": "是否点赞"
+                  }
+                },
+                "required": [
+                  "like"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "状态码"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "消息"
+                    },
+                    "data": {
+                      "type": "null",
+                      "description": "数据"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "code": 200,
+                      "msg": "success",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/posts/getlike": {
+      "get": {
+        "summary": "获取帖子的点赞数",
+        "deprecated": false,
+        "description": "由于点赞信息属于高频更新的属性，特地开启新的接口来获取",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "appKey",
+            "in": "query",
+            "description": "秘钥加密当前秒级时间戳（ AES 加密数据）",
+            "required": true,
+            "example": "{{appKey}}",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "svc",
+            "in": "query",
+            "description": "服务名称",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "post_id",
+            "in": "query",
+            "description": "帖子id",
+            "required": true,
+            "example": 123,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "like": {
+                          "type": "integer",
+                          "title": "点赞数"
+                        }
+                      },
+                      "required": [
+                        "like"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "code": 200,
+                      "msg": "success",
+                      "data": {
+                        "like": 123
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/posts/getlist": {
+      "get": {
+        "summary": "获取帖子列表",
+        "deprecated": false,
+        "description": "获取时间小于cursor的limit个的post_id",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "appKey",
+            "in": "query",
+            "description": "秘钥",
+            "required": true,
+            "example": "{{appKey}}",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "svc",
+            "in": "query",
+            "description": "服务名",
+            "required": true,
+            "example": "cc",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "最后一个帖子的时间戳，便于分页（注意时区为UTC，如果为上海时区，注意转换）",
+            "required": true,
+            "example": "2024-01-01T11:01:00",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "限制个数",
+            "required": true,
+            "example": 20,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "post_list": {
+                          "type": "array",
+                          "items": {
+                            "type": "integer",
+                            "description": "帖子ID（越往前越新）"
+                          },
+                          "description": "帖子列表（越往前越新）"
+                        }
+                      },
+                      "required": [
+                        "post_list"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "code": 200,
+                      "msg": "success",
+                      "data": {
+                        "post_list": [
+                          111
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PostComment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "评论ID",
+            "description": "评论的唯一ID"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "用户ID",
+            "description": "发表评论的用户ID"
+          },
+          "content": {
+            "type": "string",
+            "title": "内容",
+            "description": "评论内容"
+          },
+          "root_id": {
+            "type": "integer",
+            "title": "根评论ID",
+            "description": "根评论ID，如果本身就是根评论则为0"
+          },
+          "father_id": {
+            "type": "integer",
+            "title": "父亲评论ID",
+            "description": "可以理解为所回复的评论ID"
+          },
+          "target_user_id": {
+            "type": "string",
+            "title": "所回复的用户id",
+            "description": "所回复的用户id"
+          },
+          "post_id": {
+            "type": "integer",
+            "title": "帖子ID",
+            "description": "所属帖子ID"
+          },
+          "time": {
+            "type": "string",
+            "title": "发表评论或者修改评论的最新时间",
+            "description": "发表评论或者修改评论的最新时间（时间应该是上海的时区）",
+            "examples": [
+              "\"2025-02-07T19:29\""
+            ]
+          },
+          "svc": {
+            "type": "string",
+            "title": "服务名",
+            "description": "所属服务名"
+          },
+          "child_num": {
+            "type": "integer",
+            "title": "该评论的子评论",
+            "description": "该评论的子评论(当返回的不是root_comment，则为NULL)",
+            "nullable": true
+          },
+          "extra": {
+            "type": "object",
+            "properties": {},
+            "title": "额外字段",
+            "description": "额外字段"
+          }
+        },
+        "title": "帖子评论",
+        "required": [
+          "id",
+          "user_id",
+          "content",
+          "father_id",
+          "target_user_id",
+          "time",
+          "svc",
+          "post_id",
+          "child_num",
+          "root_id"
+        ]
+      },
+      "Post": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "帖子ID",
+            "description": "帖子ID"
+          },
+          "title": {
+            "type": "string",
+            "title": "标题",
+            "description": "标题"
+          },
+          "content": {
+            "type": "string",
+            "title": "帖子内容",
+            "description": "帖子内容"
+          },
+          "author": {
+            "type": "string",
+            "title": "作者",
+            "description": "作者的用户ID"
+          },
+          "time": {
+            "type": "string",
+            "title": "创建时间",
+            "description": "创建时间（Asia/Shanghai）",
+            "examples": [
+              "\"2025-02-07T19:33\""
+            ]
+          },
+          "svc": {
+            "type": "string",
+            "title": "所属服务",
+            "description": "所属服务名"
+          },
+          "extra": {
+            "type": "object",
+            "properties": {},
+            "title": "额外字段",
+            "description": "额外字段",
+            "additionalProperties": true
+          }
+        },
+        "title": "帖子",
+        "required": [
+          "id",
+          "content",
+          "author",
+          "time",
+          "svc",
+          "title"
+        ]
+      }
+    },
+    "securitySchemes": {}
+  },
+  "servers": [],
+  "security": []
+}
