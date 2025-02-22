@@ -3,7 +3,6 @@ package configs
 import (
 	"IM-Backend/global"
 	"IM-Backend/pkg"
-	"fmt"
 )
 
 // Notifyer 通知更新配置
@@ -58,8 +57,7 @@ func (ac *AppConf) StartListen(ncc *NacosClient) {
 		//先读取配置，再通知各个Notifyer更新配置
 		err := ac.load([]byte(data))
 		if err != nil {
-			//TODO:记录日志
-			fmt.Println(err)
+			global.Log.Error("load config err: %v", err)
 			return
 		}
 		ac.notify()
