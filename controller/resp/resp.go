@@ -41,9 +41,9 @@ func NewErrResp(err error) Resp {
 	var errc *errcode.Err
 	ok := errors.As(err, &errc)
 	if !ok {
-		return NewResp(http.StatusInternalServerError, err.Error(), nil)
+		return NewResp(http.StatusInternalServerError, "服务端错误", nil)
 	}
-	return NewResp(errc.Code(), errc.Msg(), nil)
+	return NewResp(errc.Code(), errcode.ClientMsgMapping[errc.Code()], nil)
 }
 
 func SendResp(ctx *gin.Context, r Resp) {
